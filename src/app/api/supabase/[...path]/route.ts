@@ -24,11 +24,11 @@ async function proxy(req: NextRequest) {
     const lower = key.toLowerCase()
     if (SKIP_EXACT.has(lower)) return
     if (SKIP_PREFIX.some(p => lower.startsWith(p))) return
-    headers[key] = value
+    headers[lower] = value
   })
 
-  if (!headers['Authorization']) {
-    headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`
+  if (!headers['authorization']) {
+    headers['authorization'] = `Bearer ${SUPABASE_ANON_KEY}`
   }
 
   const body = req.method !== 'GET' && req.method !== 'HEAD'
