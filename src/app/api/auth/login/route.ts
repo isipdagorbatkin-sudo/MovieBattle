@@ -32,14 +32,19 @@ export async function POST(request: Request) {
       },
     })
 
+    console.log('[Auth/Login] Attempting signIn for:', email)
+
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
+      console.error('[Auth/Login] signIn error:', error.message)
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
 
+    console.log('[Auth/Login] signIn success:', data.user?.id)
     return response
   } catch (error: any) {
+    console.error('[Auth/Login] exception:', error.message)
     return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 })
   }
 }

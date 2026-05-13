@@ -32,6 +32,8 @@ export async function POST(request: Request) {
       },
     })
 
+    console.log('[Auth/Register] Attempting signUp for:', email)
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -44,11 +46,14 @@ export async function POST(request: Request) {
     })
 
     if (error) {
+      console.error('[Auth/Register] signUp error:', error.message)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
+    console.log('[Auth/Register] signUp success:', data.user?.id)
     return response
   } catch (error: any) {
+    console.error('[Auth/Register] exception:', error.message)
     return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 })
   }
 }

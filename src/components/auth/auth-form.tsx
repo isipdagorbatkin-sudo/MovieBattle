@@ -36,11 +36,20 @@ export function AuthForm({ mode }: AuthFormProps) {
         ? { email, password }
         : { email, password, username, displayName: displayName || username }
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 20000)
+
+      let res: Response
+      try {
+        res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        })
+      } finally {
+        clearTimeout(timeout)
+      }
 
       const data = await res.json()
 
@@ -49,7 +58,11 @@ export function AuthForm({ mode }: AuthFormProps) {
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
-      setError(err.message)
+      if (err.name === 'AbortError') {
+        setError('Server not responding. Please try again.')
+      } else {
+        setError(err.message)
+      }
     } finally {
       setLoading(false)
     }
