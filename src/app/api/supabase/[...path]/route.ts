@@ -35,11 +35,20 @@ async function proxy(req: NextRequest) {
     ? await req.text()
     : undefined
 
-  const response = await fetch(targetUrl, {
-    method: req.method,
-    headers,
-    body,
-  })
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 20000)
+
+  let response: Response
+  try {
+    response = await fetch(targetUrl, {
+      method: req.method,
+      headers,
+      body,
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeout)
+  }
 
   const resBody = await response.text()
 
@@ -47,11 +56,29 @@ async function proxy(req: NextRequest) {
     console.error(`[Supabase Proxy] ${req.method} ${path}${search} -> ${response.status}: ${resBody.slice(0, 500)}`)
   }
 
-  return new NextResponse(resBody, {
+  const resHeaders: Record<string, string> = {}
+  response.headers.forEach((value, key) => {
+    if (key.toLowerCase() !== 'set-cookie') {
+      resHeaders[key] = value
+    }
+  })
+  if (!resHeaders['Content-Type']) resHeaders['Content-Type'] = 'application/json'
+
+  const nextRes = new NextResponse(resBody, {
     status: response.status,
     statusText: response.statusText,
-    headers: {
-      'Content-Type': response.headers.get('Content-Type') || 'application/json',
-    },
+    headers: resHeaders,
   })
+
+  try {
+    const cookies = response.headers.getSetCookie()
+    for (const cookie of cookies) {
+      nextRes.headers.append('Set-Cookie', cookie)
+    }
+  } catch {
+    const singleCookie = response.headers.get('Set-Cookie')
+    if (singleCookie) nextRes.headers.append('Set-Cookie', singleCookie)
+  }
+
+  return nextRes
 }

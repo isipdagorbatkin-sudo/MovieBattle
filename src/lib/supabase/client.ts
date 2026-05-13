@@ -8,7 +8,7 @@ export function createClient() {
 
   return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
     global: {
-      fetch: (input, init) => {
+      fetch: async (input, init) => {
         const requestUrl =
           typeof input === 'string'
             ? input
@@ -20,7 +20,30 @@ export function createClient() {
 
         if (parsed.origin === supabaseOrigin) {
           const proxyUrl = `/api/supabase${parsed.pathname}${parsed.search}`
-          return globalThis.fetch(proxyUrl, init || (input instanceof Request ? input : undefined))
+
+          const controller = new AbortController()
+          const timeout = setTimeout(() => controller.abort(), 15000)
+
+          try {
+            let proxyInit: RequestInit | undefined
+
+            if (input instanceof Request) {
+              proxyInit = {
+                method: input.method,
+                headers: input.headers,
+                body: input.method !== 'GET' && input.method !== 'HEAD' ? input.body : undefined,
+                signal: controller.signal,
+              }
+            } else if (init) {
+              proxyInit = { ...init, signal: controller.signal }
+            } else {
+              proxyInit = { signal: controller.signal }
+            }
+
+            return await globalThis.fetch(proxyUrl, proxyInit)
+          } finally {
+            clearTimeout(timeout)
+          }
         }
 
         return globalThis.fetch(input, init)
