@@ -180,14 +180,10 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
             </div>
             <div>
               <Badge variant="primary" className="text-[10px]">
-                Round {roundIndex + 1}/{rounds.length}
+                Вопрос {roundIndex + 1}/{rounds.length}
               </Badge>
               <p className="text-xs text-white/40 mt-0.5">
-                {room.game_mode === 'classic' && 'Classic Guess'}
-                {room.game_mode === 'character' && 'Character Guess'}
-                {room.game_mode === 'quote' && 'Quote Guess'}
-                {room.game_mode === 'blur' && 'Blur Mode'}
-                {room.game_mode === 'timer' && 'Timer Rush'}
+                Угадай по описанию
               </p>
             </div>
           </div>
@@ -224,8 +220,8 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                 {!currentRound ? (
                   <div className="py-12">
                     <Sparkles className="w-16 h-16 text-purple-400/50 mx-auto mb-4 animate-pulse" />
-                    <h2 className="text-2xl font-bold text-gradient mb-2">Get Ready!</h2>
-                    <p className="text-white/40">First question loading...</p>
+                    <h2 className="text-2xl font-bold text-gradient mb-2">Приготовься!</h2>
+                    <p className="text-white/40">Загрузка вопросов...</p>
                   </div>
                 ) : (
                   <>
@@ -266,16 +262,12 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                     ) : (
                       <div className="mb-6 py-8">
                         <HelpCircle className="w-10 h-10 text-purple-400 mx-auto mb-4" />
-                        <p className="text-xl text-white/80">{currentRound.clue || 'What is this?'}</p>
+                        <p className="text-xl text-white/80 leading-relaxed">{currentRound.clue || 'Что это?'}</p>
                       </div>
                     )}
 
                     <p className="text-sm text-white/30 mt-4">
-                      {room.game_mode === 'blur' && `Unblurring in ${blurAmount}s...`}
-                      {room.game_mode === 'classic' && 'Guess the title'}
-                      {room.game_mode === 'character' && 'Name the movie/anime/series'}
-                      {room.game_mode === 'quote' && 'Who said this?'}
-                      {room.game_mode === 'timer' && 'Quick! Choose the answer'}
+                      Угадай по описанию
                     </p>
                   </>
                 )}
@@ -326,10 +318,10 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                   }`}
                 >
                   <p className={`text-lg font-bold ${lastResult.correct ? 'text-green-400' : 'text-red-400'}`}>
-                    {lastResult.correct ? `+${lastResult.points} points!` : 'Wrong!'}
+                    {lastResult.correct ? `+${lastResult.points} очков!` : 'Неверно!'}
                   </p>
                   <p className="text-sm text-white/40 mt-1">
-                    Answer: {currentRound?.correct_answer}
+                    Ответ: {currentRound?.correct_answer}
                   </p>
                 </motion.div>
               )}
@@ -385,8 +377,8 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
               className="text-center"
             >
               <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-gradient mb-2">Game Over!</h2>
-              <p className="text-white/40">Redirecting to results...</p>
+              <h2 className="text-3xl font-bold text-gradient mb-2">Игра окончена!</h2>
+              <p className="text-white/40">Переход к результатам...</p>
             </motion.div>
           </motion.div>
         )}

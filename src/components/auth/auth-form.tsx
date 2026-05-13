@@ -69,7 +69,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       router.refresh()
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        setError('Server not responding. Please try again.')
+        setError('Сервер не отвечает. Попробуй снова.')
       } else {
         setError(err.message)
       }
@@ -98,22 +98,22 @@ export function AuthForm({ mode }: AuthFormProps) {
             </div>
           </Link>
           <h1 className="text-3xl font-bold text-gradient">
-            {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+            {mode === 'login' ? 'С возвращением' : 'Создать аккаунт'}
           </h1>
           <p className="text-white/40 mt-2">
-            {mode === 'login' ? 'Sign in to continue battling' : 'Start your movie battle journey'}
+            {mode === 'login' ? 'Войди, чтобы продолжить' : 'Начни своё кино-приключение'}
           </p>
         </div>
 
         <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
           <CardHeader>
             <CardTitle className="text-white text-xl">
-              {mode === 'login' ? 'Sign In' : 'Sign Up'}
+              {mode === 'login' ? 'Вход' : 'Регистрация'}
             </CardTitle>
             <CardDescription className="text-white/40">
               {mode === 'login'
-                ? 'Enter your credentials to sign in'
-                : 'Create your account to get started'}
+                ? 'Введи свои данные для входа'
+                : 'Создай аккаунт и начинай играть'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -122,22 +122,22 @@ export function AuthForm({ mode }: AuthFormProps) {
                 <>
                   <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <Input
-                      id="username"
-                      type="text"
-                      placeholder="Username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <Input
-                      id="displayName"
-                      type="text"
-                      placeholder="Display Name"
+                      <Input
+                        id="username"
+                        type="text"
+                        placeholder="Имя пользователя"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                      <Input
+                        id="displayName"
+                        type="text"
+                        placeholder="Отображаемое имя"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       className="pl-10"
@@ -148,23 +148,23 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Эл. почта"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
 
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Пароль"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10"
@@ -191,23 +191,23 @@ export function AuthForm({ mode }: AuthFormProps) {
               )}
 
               <Button variant="primary" size="lg" className="w-full" loading={loading}>
-                {mode === 'login' ? 'Sign In' : 'Create Account'}
+                {mode === 'login' ? 'Войти' : 'Создать аккаунт'}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm text-white/40">
               {mode === 'login' ? (
                 <>
-                  Don&apos;t have an account?{' '}
+                  Нет аккаунта?{' '}
                   <Link href="/register" className="text-purple-400 hover:text-purple-300 transition-colors">
-                    Sign up
+                    Зарегистрироваться
                   </Link>
                 </>
               ) : (
                 <>
-                  Already have an account?{' '}
+                  Уже есть аккаунт?{' '}
                   <Link href="/login" className="text-purple-400 hover:text-purple-300 transition-colors">
-                    Sign in
+                    Войти
                   </Link>
                 </>
               )}

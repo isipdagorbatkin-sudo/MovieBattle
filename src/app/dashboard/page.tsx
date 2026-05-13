@@ -98,26 +98,26 @@ export default function DashboardPage() {
             </Avatar>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gradient">
-                Welcome, {profile?.display_name || 'Player'}
+                С возвращением, {profile?.display_name || 'Игрок'}
               </h1>
-              <p className="text-white/40">Ready for a battle?</p>
+              <p className="text-white/40">Готов к битве?</p>
             </div>
           </div>
           <div className="flex gap-3">
             <Link href="/room/create">
               <Button variant="primary" size="lg">
                 <Plus className="w-4 h-4 mr-2" />
-                Create Room
+                Создать комнату
               </Button>
             </Link>
             <Button variant="outline" size="lg" onClick={() => setSoloModalOpen(true)}>
               <Swords className="w-4 h-4 mr-2" />
-              Play Solo
+              Одиночная
             </Button>
             <Link href="/room/join">
               <Button variant="outline" size="lg">
                 <LogIn className="w-4 h-4 mr-2" />
-                Join Room
+                Войти в комнату
               </Button>
             </Link>
           </div>
@@ -131,10 +131,10 @@ export default function DashboardPage() {
           className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10"
         >
           {[
-            { label: 'Total Matches', value: stats.total, icon: Gamepad2, color: 'from-purple-500 to-pink-500' },
-            { label: 'Wins', value: stats.wins, icon: Trophy, color: 'from-yellow-500 to-orange-500' },
-            { label: 'Total Score', value: stats.score.toLocaleString(), icon: Sparkles, color: 'from-green-500 to-emerald-500' },
-            { label: 'Win Rate', value: stats.total > 0 ? `${Math.round((stats.wins / stats.total) * 100)}%` : '0%', icon: Clock, color: 'from-blue-500 to-cyan-500' },
+            { label: 'Всего игр', value: stats.total, icon: Gamepad2, color: 'from-purple-500 to-pink-500' },
+            { label: 'Побед', value: stats.wins, icon: Trophy, color: 'from-yellow-500 to-orange-500' },
+            { label: 'Очков', value: stats.score.toLocaleString(), icon: Sparkles, color: 'from-green-500 to-emerald-500' },
+            { label: 'Процент побед', value: stats.total > 0 ? `${Math.round((stats.wins / stats.total) * 100)}%` : '0%', icon: Clock, color: 'from-blue-500 to-cyan-500' },
           ].map((stat) => {
             const Icon = stat.icon
             return (
@@ -166,8 +166,8 @@ export default function DashboardPage() {
             <Card className="border-purple-500/20 bg-gradient-to-br from-purple-600/10 to-pink-600/10 backdrop-blur-xl hover:from-purple-600/20 hover:to-pink-600/20 transition-all group cursor-pointer">
               <CardContent className="p-6">
                 <Plus className="w-8 h-8 text-purple-400 mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="text-lg font-semibold text-white mb-1">Create Room</h3>
-                <p className="text-sm text-white/40">Set up a game and invite friends</p>
+                <h3 className="text-lg font-semibold text-white mb-1">Создать комнату</h3>
+                <p className="text-sm text-white/40">Создай игру и пригласи друзей</p>
               </CardContent>
             </Card>
           </Link>
@@ -176,8 +176,8 @@ export default function DashboardPage() {
             <Card className="border-pink-500/20 bg-gradient-to-br from-pink-600/10 to-orange-600/10 backdrop-blur-xl hover:from-pink-600/20 hover:to-orange-600/20 transition-all group cursor-pointer">
               <CardContent className="p-6">
                 <LogIn className="w-8 h-8 text-pink-400 mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="text-lg font-semibold text-white mb-1">Join Room</h3>
-                <p className="text-sm text-white/40">Enter invite code to join a game</p>
+                <h3 className="text-lg font-semibold text-white mb-1">Войти в комнату</h3>
+                <p className="text-sm text-white/40">Введи код приглашения</p>
               </CardContent>
             </Card>
           </Link>
@@ -186,8 +186,8 @@ export default function DashboardPage() {
             <Card className="border-green-500/20 bg-gradient-to-br from-green-600/10 to-emerald-600/10 backdrop-blur-xl hover:from-green-600/20 hover:to-emerald-600/20 transition-all group cursor-pointer w-full">
               <CardContent className="p-6">
                 <Swords className="w-8 h-8 text-green-400 mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="text-lg font-semibold text-white mb-1">Play Solo</h3>
-                <p className="text-sm text-white/40">Quick game against yourself</p>
+                <h3 className="text-lg font-semibold text-white mb-1">Одиночная игра</h3>
+                <p className="text-sm text-white/40">Быстрая игра без друзей</p>
               </CardContent>
             </Card>
           </button>
@@ -200,11 +200,11 @@ export default function DashboardPage() {
           transition={{ delay: 0.3 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gradient">Recent Matches</h2>
+            <h2 className="text-xl font-semibold text-gradient">Последние игры</h2>
             <Link href={`/profile/${profile?.id}`}>
-              <Button variant="ghost" size="sm">
-                View All <ArrowRight className="w-3 h-3 ml-1" />
-              </Button>
+                  <Button variant="ghost" size="sm">
+                    Все <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
             </Link>
           </div>
 
@@ -212,11 +212,11 @@ export default function DashboardPage() {
             <Card className="border-white/5 bg-white/5 backdrop-blur-xl">
               <CardContent className="p-12 text-center">
                 <Gamepad2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
-                <p className="text-white/40">No matches yet. Start your first game!</p>
+                <p className="text-white/40">Ещё нет игр. Начни свою первую!</p>
                 <Link href="/room/create" className="inline-block mt-4">
                   <Button variant="primary" size="sm">
                     <Plus className="w-4 h-4 mr-2" />
-                    Create Room
+                    Создать комнату
                   </Button>
                 </Link>
               </CardContent>
