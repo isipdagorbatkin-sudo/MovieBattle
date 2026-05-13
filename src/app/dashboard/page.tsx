@@ -240,12 +240,12 @@ export default function DashboardPage() {
                           {match.category} — {match.game_mode}
                         </p>
                         <p className="text-xs text-white/40">
-                          Score: {match.final_score} • Rank #{match.rank}
+                          Очки: {match.final_score} • Место #{match.rank}
                         </p>
                       </div>
                     </div>
                     <Badge variant={match.rank === 1 ? 'success' : 'default'}>
-                      {match.rank === 1 ? 'Win' : `#${match.rank}`}
+                      {match.rank === 1 ? 'Победа' : `#${match.rank}`}
                     </Badge>
                   </CardContent>
                 </Card>

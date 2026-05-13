@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import { useRoom } from '@/hooks/use-room'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { motion } from 'framer-motion'
-import { LogIn, ArrowRight, Gamepad2 } from 'lucide-react'
+import { LogIn, ArrowRight } from 'lucide-react'
 
 export default function JoinRoomPage() {
   const [code, setCode] = useState('')
@@ -31,9 +31,9 @@ export default function JoinRoomPage() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
-          <Badge variant="primary" className="mb-4">Join Game</Badge>
-          <h1 className="text-3xl font-bold text-gradient mb-2">Enter Room Code</h1>
-          <p className="text-white/40">Ask your friend for the invite code</p>
+          <Badge variant="primary" className="mb-4">Присоединиться</Badge>
+          <h1 className="text-3xl font-bold text-gradient mb-2">Введите код комнаты</h1>
+          <p className="text-white/40">Попроси у друга код приглашения</p>
         </div>
 
         <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
@@ -42,7 +42,7 @@ export default function JoinRoomPage() {
               <div className="text-center">
                 <Input
                   id="code"
-                  placeholder="e.g. ABC123"
+                  placeholder="например ABC123"
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   className="text-center text-2xl font-bold tracking-[0.3em] h-14"
@@ -62,7 +62,7 @@ export default function JoinRoomPage() {
               )}
 
               <Button variant="primary" size="lg" className="w-full" loading={loading}>
-                Join Room
+                Присоединиться
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </form>

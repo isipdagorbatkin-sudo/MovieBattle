@@ -74,24 +74,24 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="mb-8">
-            <Badge variant="primary" className="mb-4">Settings</Badge>
-            <h1 className="text-3xl font-bold text-gradient">Account Settings</h1>
+            <Badge variant="primary" className="mb-4">Настройки</Badge>
+            <h1 className="text-3xl font-bold text-gradient">Настройки аккаунта</h1>
           </div>
 
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl mb-6">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <User className="w-5 h-5 text-purple-400" />
-                Profile
+                Профиль
               </CardTitle>
-              <CardDescription className="text-white/40">Update your profile information</CardDescription>
+              <CardDescription className="text-white/40">Обнови информацию о себе</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
                 <AtSign className="w-4 h-4 text-white/30" />
                 <Input
                   id="username"
-                  label="Username"
+                  label="Имя пользователя"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -100,7 +100,7 @@ export default function SettingsPage() {
                 <User className="w-4 h-4 text-white/30" />
                 <Input
                   id="displayName"
-                  label="Display Name"
+                  label="Отображаемое имя"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                 />
@@ -119,11 +119,11 @@ export default function SettingsPage() {
                 className={saved ? 'bg-green-600 hover:bg-green-600' : ''}
               >
                 {saved ? (
-                  <>Saved!</>
+                  <>Сохранено!</>
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    Save Changes
+                    Сохранить
                   </>
                 )}
               </Button>
@@ -134,14 +134,14 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <LogOut className="w-5 h-5 text-red-400" />
-                Danger Zone
+                Опасная зона
               </CardTitle>
-              <CardDescription className="text-white/40">Sign out of your account</CardDescription>
+              <CardDescription className="text-white/40">Выйти из аккаунта</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="danger" onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+                Выйти
               </Button>
             </CardContent>
           </Card>

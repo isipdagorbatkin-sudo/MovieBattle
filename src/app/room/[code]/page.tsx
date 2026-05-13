@@ -94,7 +94,6 @@ export default function RoomLobbyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          {/* Room Header */}
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl mb-6">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -102,7 +101,7 @@ export default function RoomLobbyPage() {
                   <Badge variant="primary" className="mb-2">
                     {room?.category?.toUpperCase()} — {room?.game_mode?.toUpperCase()}
                   </Badge>
-                  <h1 className="text-2xl font-bold text-gradient">Game Lobby</h1>
+                  <h1 className="text-2xl font-bold text-gradient">Лобби</h1>
                 </div>
                 <button
                   onClick={handleCopyCode}
@@ -120,28 +119,27 @@ export default function RoomLobbyPage() {
               <div className="flex items-center gap-4 text-sm text-white/40">
                 <span className="flex items-center gap-1">
                   <Users className="w-4 h-4" />
-                  {players.length}/{room?.max_players || 4} players
+                  {players.length}/{room?.max_players || 4} игроков
                 </span>
               </div>
             </CardContent>
           </Card>
 
-          {/* Players */}
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl mb-6">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-400" />
-                Players
+                Игроки
               </CardTitle>
               <CardDescription className="text-white/40">
-                {room?.max_players === 1 ? 'Solo game — starting...' : players.length < 2 ? 'Waiting for more players...' : 'Everyone ready?'}
+                {room?.max_players === 1 ? 'Одиночная игра — запуск...' : players.length < 2 ? 'Ожидание игроков...' : 'Все готовы?'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {players.length === 0 ? (
                 <div className="text-center py-8">
                   <Gamepad2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
-                  <p className="text-white/40">No players yet</p>
+                  <p className="text-white/40">Нет игроков</p>
                 </div>
               ) : (
                 players.map((player, i) => (
@@ -165,16 +163,16 @@ export default function RoomLobbyPage() {
                             {(player.player as any)?.display_name || 'Unknown'}
                           </p>
                           {player.is_host && (
-                            <Badge variant="primary" className="text-[10px] px-1.5 py-0">HOST</Badge>
+                            <Badge variant="primary" className="text-[10px] px-1.5 py-0">ХОСТ</Badge>
                           )}
                         </div>
                         <p className="text-xs text-white/30">
-                          Score: {player.score}
+                          Очки: {player.score}
                         </p>
                       </div>
                     </div>
                     <Badge variant={player.is_ready ? 'success' : 'default'}>
-                      {player.is_ready ? 'Ready' : 'Waiting'}
+                      {player.is_ready ? 'Готов' : 'Ожидание'}
                     </Badge>
                   </motion.div>
                 ))
@@ -182,7 +180,6 @@ export default function RoomLobbyPage() {
             </CardContent>
           </Card>
 
-          {/* Actions */}
           <div className="flex gap-3">
             <Button
               variant={myPlayer ? 'primary' : 'default'}
@@ -190,7 +187,7 @@ export default function RoomLobbyPage() {
               className="flex-1"
               onClick={handleReady}
             >
-              {myPlayer?.is_ready ? 'Not Ready' : 'Ready Up'}
+              {myPlayer?.is_ready ? 'Не готов' : 'Готов'}
             </Button>
 
             {isHost && room?.max_players !== 1 && (
@@ -202,19 +199,19 @@ export default function RoomLobbyPage() {
                 onClick={handleStartGame}
               >
                 <Play className="w-4 h-4 mr-2" />
-                Start Game
+                Начать игру
               </Button>
             )}
           </div>
 
           {room?.max_players !== 1 && !allReady && isHost && (
             <p className="text-center text-xs text-white/30 mt-3">
-              Waiting for all players to ready up...
+              Ожидание всех игроков...
             </p>
           )}
           {room?.max_players !== 1 && players.length < 2 && (
             <p className="text-center text-xs text-white/30 mt-3">
-              Need at least 2 players to start
+              Нужно минимум 2 игрока
             </p>
           )}
         </motion.div>

@@ -55,7 +55,7 @@ export default function GamePage() {
   if (!room) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-white/40">Room not found</p>
+        <p className="text-white/40">Комната не найдена</p>
       </div>
     )
   }

@@ -13,9 +13,9 @@ import type { Room, RoomPlayer } from '@/types'
 import { Trophy, Home, RotateCcw, Crown, Medal, Sparkles } from 'lucide-react'
 
 const rankColors = [
-  { bg: 'from-yellow-500 to-amber-500', icon: Crown, label: 'Winner' },
-  { bg: 'from-gray-300 to-gray-400', icon: Medal, label: 'Runner Up' },
-  { bg: 'from-amber-600 to-amber-700', icon: Medal, label: 'Third Place' },
+  { bg: 'from-yellow-500 to-amber-500', icon: Crown, label: 'Победитель' },
+  { bg: 'from-gray-300 to-gray-400', icon: Medal, label: 'Второе место' },
+  { bg: 'from-amber-600 to-amber-700', icon: Medal, label: 'Третье место' },
 ]
 
 export default function ResultsPage() {
@@ -67,8 +67,8 @@ export default function ResultsPage() {
         className="max-w-lg w-full relative z-10"
       >
         <div className="text-center mb-8">
-          <Badge variant="primary" className="mb-4">Game Over</Badge>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">Results</h1>
+          <Badge variant="primary" className="mb-4">Игра окончена</Badge>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">Результаты</h1>
           <p className="text-white/40">
             {room?.category} — {room?.game_mode}
           </p>
@@ -112,7 +112,7 @@ export default function ResultsPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold text-white">{player.score}</p>
-                        <p className="text-xs text-white/30">points</p>
+                        <p className="text-xs text-white/30">очков</p>
                       </div>
                     </div>
                   </CardContent>
@@ -126,13 +126,13 @@ export default function ResultsPage() {
           <Link href="/dashboard" className="flex-1">
             <Button variant="outline" size="lg" className="w-full">
               <Home className="w-4 h-4 mr-2" />
-              Dashboard
+              На главную
             </Button>
           </Link>
           <Link href="/room/create" className="flex-1">
             <Button variant="primary" size="lg" className="w-full">
               <RotateCcw className="w-4 h-4 mr-2" />
-              Play Again
+              Играть снова
             </Button>
           </Link>
         </div>

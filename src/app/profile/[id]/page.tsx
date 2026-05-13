@@ -59,7 +59,7 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-white/40">Profile not found</p>
+        <p className="text-white/40">Профиль не найден</p>
       </div>
     )
   }
@@ -74,7 +74,7 @@ export default function ProfilePage() {
         <Link href="/dashboard">
           <Button variant="ghost" size="sm" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Назад
           </Button>
         </Link>
 
@@ -82,7 +82,6 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          {/* Profile Header */}
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl mb-6">
             <CardContent className="p-8">
               <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
@@ -96,7 +95,7 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-4 mt-2 text-xs text-white/30">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      Joined {new Date(profile.created_at).toLocaleDateString()}
+                      Присоединился {new Date(profile.created_at).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -104,14 +103,13 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Stats */}
           {stats && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
               {[
-                { label: 'Matches', value: stats.total_matches, icon: Gamepad2, color: 'from-purple-500 to-pink-500' },
-                { label: 'Wins', value: stats.total_wins, icon: Trophy, color: 'from-yellow-500 to-orange-500' },
-                { label: 'Score', value: stats.total_score.toLocaleString(), icon: Sparkles, color: 'from-green-500 to-emerald-500' },
-                { label: 'Win Rate', value: `${stats.win_rate}%`, icon: Clock, color: 'from-blue-500 to-cyan-500' },
+                { label: 'Игр', value: stats.total_matches, icon: Gamepad2, color: 'from-purple-500 to-pink-500' },
+                { label: 'Побед', value: stats.total_wins, icon: Trophy, color: 'from-yellow-500 to-orange-500' },
+                { label: 'Очков', value: stats.total_score.toLocaleString(), icon: Sparkles, color: 'from-green-500 to-emerald-500' },
+                { label: 'Процент', value: `${stats.win_rate}%`, icon: Clock, color: 'from-blue-500 to-cyan-500' },
               ].map((stat) => {
                 const Icon = stat.icon
                 return (
@@ -129,19 +127,18 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Match History */}
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-purple-400" />
-                Match History
+                История игр
               </CardTitle>
             </CardHeader>
             <CardContent>
               {history.length === 0 ? (
                 <div className="text-center py-8">
                   <Gamepad2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
-                  <p className="text-white/40">No matches played yet</p>
+                  <p className="text-white/40">Ещё не сыграно ни одной игры</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -161,12 +158,12 @@ export default function ProfilePage() {
                             {match.category} — {match.game_mode}
                           </p>
                           <p className="text-xs text-white/30">
-                            Score: {match.final_score} • Rank #{match.rank}
+                            Очки: {match.final_score} • Место #{match.rank}
                           </p>
                         </div>
                       </div>
                       <Badge variant={match.rank === 1 ? 'success' : 'default'}>
-                        {match.rank === 1 ? 'Win' : `#${match.rank}`}
+                        {match.rank === 1 ? 'Победа' : `#${match.rank}`}
                       </Badge>
                     </div>
                   ))}

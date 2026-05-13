@@ -48,9 +48,9 @@ export default function LeaderboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <Badge variant="primary" className="mb-4">Rankings</Badge>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">Leaderboard</h1>
-          <p className="text-white/50">Top players by total score</p>
+          <Badge variant="primary" className="mb-4">Рейтинг</Badge>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">Таблица лидеров</h1>
+          <p className="text-white/50">Лучшие игроки по общему счёту</p>
         </motion.div>
 
         {loading ? (
@@ -61,7 +61,7 @@ export default function LeaderboardPage() {
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
             <CardContent className="p-12 text-center">
               <Users className="w-12 h-12 text-white/20 mx-auto mb-3" />
-              <p className="text-white/40">No players on the leaderboard yet</p>
+              <p className="text-white/40">В таблице лидеров пока никого нет</p>
             </CardContent>
           </Card>
         ) : (
@@ -69,7 +69,7 @@ export default function LeaderboardPage() {
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-yellow-400" />
-                Top Players
+                Лучшие игроки
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -110,7 +110,7 @@ export default function LeaderboardPage() {
                                 {entry.profile?.display_name || 'Unknown'}
                               </p>
                               <p className="text-xs text-white/30">
-                                {entry.total_matches} matches • {entry.total_wins} wins
+                                {entry.total_matches} игр • {entry.total_wins} побед
                               </p>
                             </div>
                           </div>

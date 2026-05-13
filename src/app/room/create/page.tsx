@@ -6,21 +6,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { motion } from 'framer-motion'
-import { Film, Tv, Sparkles, Users, ArrowRight, Gamepad2 } from 'lucide-react'
+import { Film, Sparkles, Users, ArrowRight, Gamepad2 } from 'lucide-react'
 import type { Category, GameMode } from '@/types'
 
 const categories: { value: Category; label: string; icon: typeof Film; desc: string; color: string }[] = [
-  { value: 'movies', label: 'Movies', icon: Film, desc: 'Popular blockbusters', color: 'from-purple-500 to-indigo-500' },
-  { value: 'series', label: 'Series', icon: Tv, desc: 'Popular TV shows', color: 'from-blue-500 to-cyan-500' },
-  { value: 'anime', label: 'Anime', icon: Sparkles, desc: 'Romance anime only', color: 'from-pink-500 to-rose-500' },
+  { value: 'movies', label: 'Фильмы и сериалы', icon: Film, desc: 'Популярные фильмы и сериалы', color: 'from-purple-500 to-indigo-500' },
+  { value: 'anime', label: 'Аниме', icon: Sparkles, desc: 'Романтическое аниме', color: 'from-pink-500 to-rose-500' },
 ]
 
 const gameModes: { value: GameMode; label: string; desc: string }[] = [
-  { value: 'classic', label: 'Classic Guess', desc: 'Guess by poster or frame' },
-  { value: 'character', label: 'Character Guess', desc: 'Guess by character' },
-  { value: 'quote', label: 'Quote Guess', desc: 'Guess by quote' },
-  { value: 'blur', label: 'Blur Mode', desc: 'Blurred image, unblurs over time' },
-  { value: 'timer', label: 'Timer Rush', desc: 'Rapid-fire questions' },
+  { value: 'classic', label: 'Классический', desc: 'Угадай по описанию' },
+  { value: 'character', label: 'Персонаж', desc: 'Угадай по персонажу' },
+  { value: 'quote', label: 'Цитата', desc: 'Угадай по цитате' },
+  { value: 'blur', label: 'Размытие', desc: 'Размытое изображение' },
+  { value: 'timer', label: 'На время', desc: 'Быстрые вопросы' },
 ]
 
 export default function CreateRoomPage() {
@@ -41,9 +40,9 @@ export default function CreateRoomPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <Badge variant="primary" className="mb-4">New Game</Badge>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">Create a Room</h1>
-          <p className="text-white/50">Choose your category and game mode</p>
+          <Badge variant="primary" className="mb-4">Новая игра</Badge>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">Создать комнату</h1>
+          <p className="text-white/50">Выбери категорию и режим игры</p>
         </motion.div>
 
         <motion.div
@@ -52,17 +51,16 @@ export default function CreateRoomPage() {
           transition={{ delay: 0.1 }}
           className="space-y-8"
         >
-          {/* Category Selection */}
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Film className="w-5 h-5 text-purple-400" />
-                Category
+                Категория
               </CardTitle>
-              <CardDescription className="text-white/40">What do you want to guess?</CardDescription>
+              <CardDescription className="text-white/40">Что будем угадывать?</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {categories.map((cat) => {
                   const Icon = cat.icon
                   return (
@@ -85,14 +83,13 @@ export default function CreateRoomPage() {
             </CardContent>
           </Card>
 
-          {/* Game Mode Selection */}
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Gamepad2 className="w-5 h-5 text-pink-400" />
-                Game Mode
+                Режим игры
               </CardTitle>
-              <CardDescription className="text-white/40">How do you want to play?</CardDescription>
+              <CardDescription className="text-white/40">Как будем играть?</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -114,7 +111,6 @@ export default function CreateRoomPage() {
             </CardContent>
           </Card>
 
-          {/* Create Button */}
           <Button
             variant="primary"
             size="xl"
@@ -122,7 +118,7 @@ export default function CreateRoomPage() {
             loading={loading}
             onClick={() => createRoom(category, gameMode)}
           >
-            Create Room
+            Создать комнату
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </motion.div>

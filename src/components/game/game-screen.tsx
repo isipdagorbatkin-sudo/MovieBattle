@@ -332,7 +332,7 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
               <CardContent className="p-4">
                 <h3 className="text-sm font-medium text-white/50 mb-3 flex items-center gap-2">
                   <Trophy className="w-4 h-4" />
-                  Scores
+                  Счёт
                 </h3>
                 <div className="space-y-2">
                   {players
