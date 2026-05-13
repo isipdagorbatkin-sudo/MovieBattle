@@ -30,18 +30,20 @@ export async function POST(request: Request) {
     const questions = await generateQuestions(room.category, room.game_mode, 10)
 
     const rounds: any[] = []
+    const charLookups = questions.map((q) =>
+      q.type === 'character' && q.clue && !q.characterImage
+        ? lookupCharacterImage(q.clue, room.category)
+        : Promise.resolve(null)
+    )
+    const charImages = await Promise.all(charLookups)
+
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i]
       let mediaUrl = q.mediaUrl
       if (q.type === 'character' && q.clue) {
-        if (q.characterImage) {
-          mediaUrl = `/api/image-proxy?url=${encodeURIComponent(q.characterImage)}`
-        } else {
-          const imageUrl = await lookupCharacterImage(q.clue, room.category)
-          if (imageUrl) {
-            mediaUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
-          }
-          await sleep(350)
+        const imageUrl = q.characterImage || charImages[i]
+        if (imageUrl) {
+          mediaUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
         }
       }
       rounds.push({

@@ -1,3 +1,5 @@
+import { CHARACTER_NAME_MAP } from './character-names'
+
 async function fetchJson(url: string): Promise<any> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 8000)
@@ -19,13 +21,15 @@ export async function lookupCharacterImage(
   characterName: string,
   category: 'anime' | 'movies' | 'series'
 ): Promise<string | null> {
-  if (category === 'anime') {
-    const data = await fetchJson(
-      `https://api.jikan.moe/v4/characters?q=${encodeURIComponent(characterName)}&limit=1`
-    )
-    if (data?.data?.[0]?.images?.jpg?.image_url) {
-      return data.data[0].images.jpg.image_url
-    }
+  if (category !== 'anime') return null
+
+  const englishName = CHARACTER_NAME_MAP[characterName] || characterName
+
+  const data = await fetchJson(
+    `https://api.jikan.moe/v4/characters?q=${encodeURIComponent(englishName)}&limit=1`
+  )
+  if (data?.data?.[0]?.images?.jpg?.image_url) {
+    return data.data[0].images.jpg.image_url
   }
 
   return null
