@@ -189,12 +189,13 @@ export function useRoom() {
     }
   }, [])
 
-  const subscribeToRoom = useCallback((code: string) => {
+  const subscribeToRoom = useCallback((roomId: string) => {
+    if (!roomId) return () => {}
     const channel = supabase
-      .channel(`room:${code}`)
+      .channel(`room:${roomId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'room_players', filter: `room_id=eq.${code}` },
+        { event: '*', schema: 'public', table: 'room_players', filter: `room_id=eq.${roomId}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setPlayers((prev) => [...prev, payload.new as RoomPlayer])

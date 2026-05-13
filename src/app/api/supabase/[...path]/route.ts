@@ -46,6 +46,13 @@ async function proxy(req: NextRequest) {
       body,
       signal: controller.signal,
     })
+  } catch (err: any) {
+    clearTimeout(timeout)
+    console.error(`[Supabase Proxy] ${req.method} ${path}${search} -> FETCH ERROR: ${err.message}`)
+    return NextResponse.json(
+      { error: `Proxy fetch failed: ${err.message}` },
+      { status: 502 }
+    )
   } finally {
     clearTimeout(timeout)
   }

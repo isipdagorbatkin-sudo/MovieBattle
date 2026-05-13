@@ -19,20 +19,29 @@ export default function RoomLobbyPage() {
   const { room, players, fetchRoom, subscribeToRoom } = useRoom()
   const [copied, setCopied] = useState(false)
   const [isHost, setIsHost] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
     fetchRoom(code)
-    const unsub = subscribeToRoom(code)
-    return unsub
   }, [code])
 
   useEffect(() => {
-    const checkHost = async () => {
+    if (!room?.id) return
+    fetchRoom(code)
+    const unsub = subscribeToRoom(room.id)
+    return unsub
+  }, [room?.id])
+
+  useEffect(() => {
+    const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user && room) setIsHost(user.id === room.host_id)
+      if (user) {
+        setCurrentUserId(user.id)
+        if (room) setIsHost(user.id === room.host_id)
+      }
     }
-    checkHost()
+    checkUser()
   }, [room])
 
   const handleCopyCode = () => {
@@ -71,7 +80,7 @@ export default function RoomLobbyPage() {
   }
 
   const allReady = players.length >= 2 && players.every(p => p.is_ready)
-  const currentUserId = room ? players.find(p => p.is_host)?.player_id : null
+  const myPlayer = currentUserId ? players.find(p => p.player_id === currentUserId) : null
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -176,12 +185,12 @@ export default function RoomLobbyPage() {
           {/* Actions */}
           <div className="flex gap-3">
             <Button
-              variant={players.find(p => p.is_host)?.player_id ? 'primary' : 'default'}
+              variant={myPlayer ? 'primary' : 'default'}
               size="lg"
               className="flex-1"
               onClick={handleReady}
             >
-              {players.find(p => p.is_host)?.is_ready ? 'Not Ready' : 'Ready Up'}
+              {myPlayer?.is_ready ? 'Not Ready' : 'Ready Up'}
             </Button>
 
             {isHost && room?.max_players !== 1 && (
