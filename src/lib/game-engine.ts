@@ -37,7 +37,7 @@ async function fetchTMDBPopular(type: 'movie' | 'tv'): Promise<any[]> {
   const allItems: any[] = []
   const seen = new Set<number>()
 
-  for (const page of [1, 2, 3, 4, 5]) {
+  for (const page of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
     try {
       const res = await fetch(
         `${TMDB_BASE}/${endpoint}/popular?api_key=${TMDB_KEY}&language=en-US&page=${page}`,
@@ -74,7 +74,7 @@ async function fetchAnimeRomance(): Promise<any[]> {
   const allItems: any[] = []
   const seen = new Set<number>()
 
-  for (const page of [1, 2, 3]) {
+  for (const page of [1, 2, 3, 4, 5, 6]) {
     try {
       const res = await fetch(
         `${SHIKIMORI_BASE}/animes?page=${page}&limit=50&order=popularity&genre=8&censored=true`,
@@ -108,7 +108,7 @@ export async function generateQuestions(
   try {
     if (category === 'anime') {
       const animes = await fetchAnimeRomance()
-      const popular = shuffleArray(animes.filter((a: any) => a.score && parseFloat(a.score) > 6))
+      const popular = shuffleArray(animes.filter((a: any) => a.score && parseFloat(a.score) > 5.5))
 
       if (popular.length > 0) {
         for (let i = 0; i < Math.min(count, popular.length); i++) {
