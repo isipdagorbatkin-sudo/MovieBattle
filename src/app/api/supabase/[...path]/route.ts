@@ -29,14 +29,11 @@ async function proxy(req: NextRequest) {
     Authorization: req.headers.get('Authorization') || `Bearer ${SUPABASE_ANON_KEY}`,
   }
 
-  const contentType = req.headers.get('Content-Type')
-  if (contentType) headers['Content-Type'] = contentType
-
-  const accept = req.headers.get('Accept')
-  if (accept) headers['Accept'] = accept
-
-  const xClientInfo = req.headers.get('X-Client-Info')
-  if (xClientInfo) headers['X-Client-Info'] = xClientInfo
+  const forwardHeaders = ['Content-Type', 'Accept', 'X-Client-Info', 'Prefer', 'Accept-Profile', 'Content-Profile']
+  for (const name of forwardHeaders) {
+    const value = req.headers.get(name)
+    if (value) headers[name] = value
+  }
 
   const body = req.method !== 'GET' && req.method !== 'HEAD'
     ? await req.text()
