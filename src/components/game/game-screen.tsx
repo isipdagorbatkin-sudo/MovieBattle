@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { calculatePoints } from '@/lib/utils'
+import { getCategoryTitles } from '@/lib/game-data'
 import type { Room, RoomPlayer, Round } from '@/types'
 import {
   Zap,
@@ -20,6 +21,7 @@ import {
   MessageSquare,
   User,
   HelpCircle,
+  Search,
 } from 'lucide-react'
 
 interface GameScreenProps {
@@ -39,6 +41,10 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
   const [blurAmount, setBlurAmount] = useState(20)
   const [gameOver, setGameOver] = useState(false)
   const [playerScores, setPlayerScores] = useState<Record<string, number>>({})
+  const [inputValue, setInputValue] = useState('')
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const supabase = createClient()
   const isPollingRef = useRef(false)
@@ -99,6 +105,10 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
     setTimeLeft(Math.floor(currentRound.time_limit / 1000))
     setHasAnswered(false)
     setLastResult(null)
+    setInputValue('')
+    setSuggestions([])
+    setShowSuggestions(false)
+    inputRef.current?.focus()
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -152,11 +162,15 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
   const handleAnswer = useCallback(async (answer: string) => {
     if (hasAnswered || !currentRound) return
     setHasAnswered(true)
+    setShowSuggestions(false)
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const isCorrect = answer.toLowerCase() === currentRound.correct_answer.toLowerCase()
+    const normalizedAnswer = answer.trim().toLowerCase()
+    const normalizedCorrect = currentRound.correct_answer.trim().toLowerCase()
+    const isCorrect = normalizedAnswer === normalizedCorrect
+
     const points = isCorrect ? calculatePoints(0, currentRound.time_limit) : 0
 
     setLastResult({ correct: isCorrect, points })
@@ -197,7 +211,35 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
 
   const ModeIconComponent = modeIcon || HelpCircle
 
-  const options = currentRound?.options || []
+  const allTitles = currentRound ? getCategoryTitles(room.category) : []
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setInputValue(value)
+    if (value.trim().length > 0 && !hasAnswered) {
+      const filtered = allTitles.filter(t =>
+        t.toLowerCase().includes(value.trim().toLowerCase())
+      ).slice(0, 8)
+      setSuggestions(filtered)
+      setShowSuggestions(filtered.length > 0)
+    } else {
+      setSuggestions([])
+      setShowSuggestions(false)
+    }
+  }
+
+  const handleSuggestionClick = (title: string) => {
+    setInputValue(title)
+    setShowSuggestions(false)
+    handleAnswer(title)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (inputValue.trim() && !hasAnswered) {
+      handleAnswer(inputValue.trim())
+    }
+  }
 
   return (
     <div className="min-h-screen pt-20 pb-8 px-4">
@@ -314,35 +356,50 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
               </CardContent>
             </Card>
 
-            {/* Options */}
-            {options.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                {options.map((option, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                  >
-                    <Button
-                      variant={hasAnswered ? 'ghost' : 'outline'}
-                      size="xl"
-                      className={`w-full h-auto py-4 text-sm ${
-                        hasAnswered
-                          ? option === currentRound?.correct_answer
-                            ? 'border-green-500/50 bg-green-500/10 text-green-300'
-                            : 'opacity-40'
-                          : ''
-                      }`}
-                      onClick={() => handleAnswer(option)}
-                      disabled={hasAnswered || timeLeft === 0}
-                    >
-                      {option}
-                    </Button>
-                  </motion.div>
-                ))}
+            {/* Autocomplete Input */}
+            <form onSubmit={handleSubmit} className="relative mb-8 max-w-lg mx-auto">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onFocus={() => inputValue.trim() && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  placeholder="Введи название..."
+                  disabled={hasAnswered || timeLeft === 0}
+                  className={`w-full pl-12 pr-4 py-4 rounded-xl text-lg bg-white/10 border text-white placeholder-white/30 outline-none transition-colors ${
+                    hasAnswered
+                      ? 'border-white/10'
+                      : 'border-white/20 focus:border-purple-500'
+                  } disabled:opacity-50`}
+                />
               </div>
-            )}
+              {showSuggestions && suggestions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute z-20 top-full mt-2 left-0 right-0 bg-zinc-800 border border-white/10 rounded-xl overflow-hidden shadow-2xl"
+                >
+                  {suggestions.map((title, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleSuggestionClick(title)
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm text-white/80 hover:bg-white/10 transition-colors ${
+                        i < suggestions.length - 1 ? 'border-b border-white/5' : ''
+                      }`}
+                    >
+                      {title}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </form>
 
             {/* Result Feedback */}
             <AnimatePresence>
