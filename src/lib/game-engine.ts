@@ -3,7 +3,6 @@ import type { Category, GameMode, QuestionData } from '@/types'
 
 const TMDB_BASE = 'https://api.themoviedb.org/3'
 const TMDB_KEY = process.env.TMDB_API_KEY
-const SHIKIMORI_BASE = 'https://shikimori.one/api'
 
 const WORDS = ['the', 'a', 'an', 'and', 'or', 'of', 'in', 'to', 'for', 'with', 'on', 'at', 'by', 'is', 'it']
 
@@ -26,51 +25,51 @@ function tmdbImage(path: string | null): string | null {
   return `/api/image-proxy?path=${encodeURIComponent('/w500' + path)}`
 }
 
-function shikimoriImage(path: string | null): string | null {
-  if (!path) return null
-  return `/api/image-proxy?url=${encodeURIComponent('https://shikimori.one' + path)}`
-}
-
-async function fetchJikanImageByMalId(malId: number): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `https://api.jikan.moe/v4/anime/${malId}`,
-      {
-        headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
-        signal: AbortSignal.timeout(4000),
-      }
-    )
-    if (!res.ok) return null
-    const data = await res.json()
-    const imageUrl = data?.data?.images?.jpg?.large_image_url
-    if (!imageUrl) return null
-    return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
-  } catch {
-    return null
-  }
-}
-
-async function fetchJikanImageByName(name: string): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(name)}&limit=3`,
-      {
-        headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
-        signal: AbortSignal.timeout(4000),
-      }
-    )
-    if (!res.ok) return null
-    const data = await res.json()
-    const results = data.data
-    if (!results || results.length === 0) return null
-    const best = results[0]
-    const imageUrl = best?.images?.jpg?.large_image_url
-    if (!imageUrl) return null
-    return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
-  } catch {
-    return null
-  }
-}
+const CURATED_ANIME = [
+  'Toradora!', 'Clannad', 'Clannad: After Story', 'Golden Time',
+  'Your Lie in April', 'My Teen Romantic Comedy SNAFU', 'Kaguya-sama: Love is War',
+  'Fruits Basket', 'Horimiya', 'Rascal Does Not Dream of Bunny Girl Senpai',
+  'My Dress-Up Darling', 'The Dangers in My Heart', 'Insomniacs After School',
+  'Kimi ni Todoke: From Me to You', 'Lovely Complex', 'Nana',
+  'Paradise Kiss', 'Honey and Clover', 'Kids on the Slope', 'Chihayafuru',
+  'Ao Haru Ride', 'Orange', 'ReLIFE', 'Tsuki ga Kirei', 'Just Because!',
+  'The Pet Girl of Sakurasou', 'The Kawai Complex Guide to Manors and Hostel Behavior',
+  'Monthly Girls Nozaki-kun', 'Romantic Killer', 'Tonikawa: Over the Moon for You',
+  'The Quintessential Quintuplets', 'Nisekoi', 'We Never Learn: BOKUBEN',
+  'Masamune-kun Revenge', 'Yamada-kun and the Seven Witches', 'Boarding School Juliet',
+  'Love Chunibyo Other Delusions', 'When Will Ayumu Make His Move?',
+  'Aharen-san wa Hakarenai', 'Komi Cant Communicate',
+  'Science Fell in Love So I Tried to Prove It', 'Recovery of an MMO Junkie',
+  'Wotakoi: Love is Hard for Otaku', 'Princess Jellyfish',
+  'Kimi no Iru Machi', 'Fuuka', 'Suzuka', 'Domestic Girlfriend', 'Scums Wish',
+  'White Album 2', 'True Tears', 'A Lull in the Sea', 'Waiting in the Summer',
+  'Please Teacher!', 'One Week Friends', 'Kokoro Connect',
+  'The Girl Who Leapt Through Time', 'Summer Wars', 'Wolf Children',
+  'The Boy and the Beast', 'Maquia: When the Promised Flower Blooms', 'Hal',
+  'The Anthem of the Heart', 'A Silent Voice', 'I Want to Eat Your Pancreas',
+  'Weathering With You', '5 Centimeters Per Second', 'The Garden of Words',
+  'Josee the Tiger and the Fish', 'Ride Your Wave', 'Her Blue Sky',
+  'Flavors of Youth', 'Penguin Highway', 'Words Bubble Up Like Soda Pop',
+  'Bloom Into You', 'Citrus', 'Adachi and Shimamura', 'Sakura Trick',
+  'Given', 'Doukyuusei', 'Sasaki and Miyano', 'Yuri on Ice',
+  'The Ancient Magus Bride', 'My Happy Marriage',
+  'Sacrificial Princess and the King of Beasts', 'Snow White with the Red Hair',
+  'Yona of the Dawn', 'Kamisama Kiss', 'InuYasha', 'Maid Sama!',
+  'Special A', 'Itazura na Kiss', 'Nodame Cantabile', 'Say I Love You',
+  'Wolf Girl and Black Prince', 'My Little Monster', 'Blue Box',
+  'Suzume', 'Fireworks', 'Whisker Away',
+  'Engage Kiss', 'Strawberry Panic', 'Love Stage!!',
+  'Hitorijime My Hero', 'The Stranger by the Beach',
+  'Bakuman', 'Baby Steps', 'Cross Game', 'Touch', 'H2', 'Grand Blue Dreaming',
+  'Love Me Love Me Not', 'The Relative Worlds',
+  'To Every You Ive Loved Before', 'To Me the One Who Loved You',
+  'A Couple of Cuckoos', 'Shikimoris Not Just a Cutie',
+  'Kubo Wont Let Me Be Invisible', 'More Than a Married Couple But Not Lovers',
+  'Gamers!', 'Uzaki-chan Wants to Hang Out', 'Nagatoro',
+  'My First Girlfriend is a Gal', 'Rent-a-Girlfriend',
+  'Bottom-Tier Character Tomozaki', 'Gekkan Shoujo Nozaki-kun',
+  'Date A Live', 'Darling in the Franxx',
+]
 
 const CURATED_MOVIES = [
   19995, 76600, 634649, 299534, 299536, 597, 475557, 120, 27205, 157336,
@@ -175,45 +174,30 @@ async function fetchTMDBItems(type: 'movie' | 'tv'): Promise<any[]> {
   return items
 }
 
-async function fetchTMDBDetails(type: 'movie' | 'tv', id: number): Promise<any> {
-  if (!TMDB_KEY) return null
+async function fetchAnimeByName(name: string): Promise<{ title: string; imageUrl: string | null; malId: number | null } | null> {
   try {
-    const endpoint = type === 'movie' ? 'movie' : 'tv'
     const res = await fetch(
-      `${TMDB_BASE}/${endpoint}/${id}?api_key=${TMDB_KEY}&append_to_response=credits,images`,
-      { next: { revalidate: 86400 } }
+      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(name)}&limit=1`,
+      {
+        headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
+        signal: AbortSignal.timeout(5000),
+      }
     )
     if (!res.ok) return null
-    return await res.json()
-  } catch { return null }
-}
+    const data = await res.json()
+    const anime = data?.data?.[0]
+    if (!anime) return null
 
-async function fetchAnimeRomance(): Promise<any[]> {
-  const allItems: any[] = []
-  const seen = new Set<number>()
+    const title = anime.title_english || anime.title || name
+    const imageUrl = anime.images?.jpg?.large_image_url
+      ? `/api/image-proxy?url=${encodeURIComponent(anime.images.jpg.large_image_url)}`
+      : null
+    const malId = anime.mal_id || null
 
-  for (const page of [1, 2, 3, 4, 5, 6]) {
-    try {
-      const res = await fetch(
-        `${SHIKIMORI_BASE}/animes?page=${page}&limit=50&order=popularity&genre=8&censored=true`,
-        {
-          headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
-          next: { revalidate: 3600 },
-        }
-      )
-      if (!res.ok) break
-      const data = await res.json()
-      if (!Array.isArray(data)) break
-      for (const item of data) {
-        if (!seen.has(item.id)) {
-          seen.add(item.id)
-          allItems.push(item)
-        }
-      }
-    } catch { break }
+    return { title, imageUrl, malId }
+  } catch {
+    return null
   }
-
-  return allItems
 }
 
 export async function generateQuestions(
@@ -225,35 +209,38 @@ export async function generateQuestions(
 
   try {
     if (category === 'anime') {
-      const animes = await fetchAnimeRomance()
-      const popular = shuffleArray(animes.filter((a: any) => a.score && parseFloat(a.score) > 5.5))
+      const names = shuffleArray(CURATED_ANIME)
+      const usedNames = new Set<string>()
 
-      if (popular.length > 0) {
-        for (let i = 0; i < Math.min(count, popular.length); i++) {
-          const anime = popular[i]
-          const allNames = popular.map((a: any) => a.russian || a.name)
-          const correctName = anime.russian || anime.name
-          const options = generateOptions(correctName, allNames, gameMode)
+      for (let i = 0; i < names.length && questions.length < count; i++) {
+        const name = names[i]
+        if (usedNames.has(name.toLowerCase())) continue
+        usedNames.add(name.toLowerCase())
 
-          const malId = anime.mal_id
-          let mediaUrl = malId
-            ? await fetchJikanImageByMalId(malId)
-            : await fetchJikanImageByName(correctName)
-          if (!mediaUrl) mediaUrl = await fetchJikanImageByName(correctName)
-          if (!mediaUrl) mediaUrl = shikimoriImage(anime.image?.original || anime.image?.preview || null)
+        const result = await fetchAnimeByName(name)
+        if (!result) continue
 
-          questions.push({
-            id: `anime-${anime.id}`,
-            type: gameMode === 'quote' ? 'quote' : 'poster',
-            mediaUrl,
-            clue: anime.description?.slice(0, 200) || null,
-            options,
-            correctAnswer: correctName,
-            timeLimit: gameMode === 'timer' ? 8000 : 15000,
-            category: 'anime',
-            title: correctName,
-          })
-        }
+        const correctName = result.title
+        if (usedNames.has(correctName.toLowerCase())) continue
+        usedNames.add(correctName.toLowerCase())
+
+        const otherNames = CURATED_ANIME.filter(
+          n => !usedNames.has(n.toLowerCase()) && n.toLowerCase() !== correctName.toLowerCase()
+        )
+        const allNames = [correctName, ...otherNames]
+        const options = generateOptions(correctName, allNames, gameMode)
+
+        questions.push({
+          id: `anime-jikan-${result.malId || i}`,
+          type: gameMode === 'quote' ? 'quote' : 'poster',
+          mediaUrl: result.imageUrl,
+          clue: null,
+          options,
+          correctAnswer: correctName,
+          timeLimit: gameMode === 'timer' ? 8000 : 15000,
+          category: 'anime',
+          title: correctName,
+        })
       }
     } else {
       const type = category === 'movies' ? 'movie' : 'tv'
