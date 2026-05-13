@@ -252,11 +252,9 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                     ) : room.game_mode === 'character' ? (
                       <div className="mb-6 py-4">
                         <User className="w-10 h-10 text-pink-400 mx-auto mb-4" />
-                        <p className="text-xl text-white/80">
-                          Which title features this character?
-                        </p>
+                        <p className="text-lg text-white/50 mb-2">Какой фильм/сериал/аниме?</p>
                         {currentRound.clue && (
-                          <p className="text-sm text-white/40 mt-2">&ldquo;{currentRound.clue}&rdquo;</p>
+                          <p className="text-2xl font-bold text-white/90 mt-2">&ldquo;{currentRound.clue}&rdquo;</p>
                         )}
                       </div>
                     ) : (

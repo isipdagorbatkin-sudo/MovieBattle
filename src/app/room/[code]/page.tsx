@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useRoom } from '@/hooks/use-room'
 import { createClient } from '@/lib/supabase/client'
@@ -16,11 +16,12 @@ export default function RoomLobbyPage() {
   const params = useParams()
   const router = useRouter()
   const code = params.code as string
-  const { room, players, fetchRoom, subscribeToRoom } = useRoom()
+  const { room, players, fetchRoom } = useRoom()
   const [copied, setCopied] = useState(false)
   const [isHost, setIsHost] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const supabase = createClient()
+  const pollingRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     fetchRoom(code)
@@ -29,9 +30,20 @@ export default function RoomLobbyPage() {
   useEffect(() => {
     if (!room?.id) return
     fetchRoom(code)
-    const unsub = subscribeToRoom(room.id)
-    return unsub
+    pollingRef.current = setInterval(() => {
+      fetchRoom(code)
+    }, 3000)
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current)
+    }
   }, [room?.id])
+
+  useEffect(() => {
+    if (!room?.id || !currentUserId || isHost) return
+    if (room.status === 'playing') {
+      router.push(`/game/${room.id}`)
+    }
+  }, [room?.status, room?.id, currentUserId, isHost])
 
   useEffect(() => {
     const checkUser = async () => {
@@ -76,6 +88,7 @@ export default function RoomLobbyPage() {
     const player = players.find(p => p.player_id === user.id)
     if (player) {
       await supabase.from('room_players').update({ is_ready: !player.is_ready }).eq('id', player.id)
+      fetchRoom(code)
     }
   }
 
