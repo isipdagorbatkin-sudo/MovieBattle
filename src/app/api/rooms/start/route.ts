@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Only host can start' }, { status: 403 })
     }
 
-    const questions = await generateQuestions(room.category, room.game_mode, 10)
+    const questions = await generateQuestions(room.category, room.game_mode, 10, room.id)
 
     const rounds: any[] = []
     const charLookups = questions.map((q) =>

@@ -88,6 +88,10 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
 
   const currentRound = roundIndex >= 0 && roundIndex < rounds.length ? rounds[roundIndex] : null
 
+  const showAnswerOverlay = (hasAnswered && lastResult && !lastResult.correct) || (timeLeft === 0 && !hasAnswered)
+  const overlayText = hasAnswered ? 'Неверно!' : 'Не успели!'
+  const overlayTimeout = timeLeft === 0 && !hasAnswered
+
   useEffect(() => {
     if (!currentRound) return
 
@@ -298,35 +302,80 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                 ) : (
                   <>
                     {room.game_mode === 'blur' && currentRound.media_url ? (
-                      <div className="relative max-w-md mx-auto mb-6">
-                        <img
-                          src={currentRound.media_url}
-                          alt="Blurred"
-                          className="w-full rounded-xl"
-                          style={{ filter: `blur(${blurAmount}px)` }}
-                        />
+                      <div className="mx-auto mb-6" style={{ maxWidth: '380px' }}>
+                        <div className="relative">
+                          <img
+                            src={currentRound.media_url}
+                            alt="Blurred"
+                            className="w-full rounded-xl"
+                            style={{ filter: `blur(${blurAmount}px)` }}
+                            onLoad={(e) => {
+                              const img = e.target as HTMLImageElement
+                              if (img.naturalWidth < 100) img.style.display = 'none'
+                            }}
+                          />
+                          {showAnswerOverlay && (
+                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center rounded-xl z-10">
+                              <div className="text-center px-4">
+                                <p className="text-lg font-bold text-red-400 mb-1">{overlayText}</p>
+                                <p className="text-sm text-white/80">Правильный ответ:</p>
+                                <p className="text-base font-bold text-green-400 mt-1">{currentRound?.correct_answer}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ) : room.game_mode === 'classic' && currentRound.media_url ? (
-                      <div className="max-w-md mx-auto mb-6">
-                        <img
-                          src={currentRound.media_url}
-                          alt="Guess"
-                          className="w-full rounded-xl shadow-2xl"
-                        />
+                      <div className="mx-auto mb-6" style={{ maxWidth: '380px' }}>
+                        <div className="relative">
+                          <img
+                            src={currentRound.media_url}
+                            alt="Guess"
+                            className="w-full rounded-xl shadow-2xl"
+                            onLoad={(e) => {
+                              const img = e.target as HTMLImageElement
+                              if (img.naturalWidth < 100) img.style.display = 'none'
+                            }}
+                          />
+                          {showAnswerOverlay && (
+                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center rounded-xl z-10">
+                              <div className="text-center px-4">
+                                <p className="text-lg font-bold text-red-400 mb-1">{overlayText}</p>
+                                <p className="text-sm text-white/80">Правильный ответ:</p>
+                                <p className="text-base font-bold text-green-400 mt-1">{currentRound?.correct_answer}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ) : room.game_mode === 'character' ? (
                       <div className="mb-6 py-4">
                         <p className="text-lg text-white/50 mb-4">Угадай по фото персонажа</p>
                         {currentRound.media_url ? (
-                          <div className="max-w-xs mx-auto mb-4">
-                            <img
-                              src={currentRound.media_url}
-                              alt="Персонаж"
-                              className="w-full rounded-xl shadow-2xl"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none'
-                              }}
-                            />
+                          <div className="mx-auto mb-4" style={{ maxWidth: '260px' }}>
+                            <div className="relative">
+                              <img
+                                src={currentRound.media_url}
+                                alt="Персонаж"
+                                className="w-full rounded-xl shadow-2xl"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none'
+                                }}
+                                onLoad={(e) => {
+                                  const img = e.target as HTMLImageElement
+                                  if (img.naturalWidth < 100) img.style.display = 'none'
+                                }}
+                              />
+                              {showAnswerOverlay && (
+                                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center rounded-xl z-10">
+                                  <div className="text-center px-4">
+                                    <p className="text-lg font-bold text-red-400 mb-1">{overlayText}</p>
+                                    <p className="text-sm text-white/80">Правильный ответ:</p>
+                                    <p className="text-base font-bold text-green-400 mt-1">{currentRound?.correct_answer}</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         ) : (
                           <div className="mb-6">

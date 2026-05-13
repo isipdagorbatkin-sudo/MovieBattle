@@ -36,10 +36,29 @@ export function formatDate(date: string): string {
   })
 }
 
-export function shuffleArray<T>(array: T[]): T[] {
+function hashCode(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash |= 0
+  }
+  return hash
+}
+
+function seededRandom(seed: number): () => number {
+  let s = seed
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xFFFFFFFF
+    return (s >>> 0) / 0xFFFFFFFF
+  }
+}
+
+export function shuffleArray<T>(array: T[], seed?: string): T[] {
   const shuffled = [...array]
+  const rand = seed ? seededRandom(hashCode(seed)) : Math.random
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(rand() * (i + 1))
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
   return shuffled

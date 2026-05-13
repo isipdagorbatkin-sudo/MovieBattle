@@ -39,7 +39,8 @@ function generateOptions(correct: string, allNames: string[]): string[] {
 export async function generateQuestions(
   category: Category,
   gameMode: GameMode,
-  count: number = 10
+  count: number = 10,
+  seed?: string
 ): Promise<QuestionData[]> {
   const isCharacter = gameMode === 'character'
   const allSource = category === 'anime' ? ANIME : [...MOVIES, ...SERIES]
