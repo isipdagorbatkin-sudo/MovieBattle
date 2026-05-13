@@ -162,6 +162,7 @@ export interface QuestionData {
   type: 'poster' | 'character' | 'quote' | 'blur' | 'description'
   mediaUrl: string | null
   clue: string | null
+  characterImage: string | null
   options: string[]
   correctAnswer: string
   timeLimit: number

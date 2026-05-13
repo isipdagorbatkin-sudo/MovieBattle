@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { generateQuestions } from '@/lib/game-engine'
-import { shuffleArray } from '@/lib/utils'
+import { lookupCharacterImage, sleep } from '@/lib/character-images'
 
 export async function POST(request: Request) {
   try {
@@ -29,16 +29,28 @@ export async function POST(request: Request) {
 
     const questions = await generateQuestions(room.category, room.game_mode, 10)
 
-    const rounds = questions.map((q, i) => ({
-      room_id: roomId,
-      round_number: i + 1,
-      question_type: q.type,
-      correct_answer: q.correctAnswer,
-      options: q.options,
-      media_url: q.mediaUrl,
-      clue: q.clue,
-      time_limit: q.timeLimit,
-    }))
+    const rounds: any[] = []
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i]
+      let mediaUrl = q.mediaUrl
+      if (q.type === 'character' && q.clue) {
+        const imageUrl = await lookupCharacterImage(q.clue, room.category)
+        if (imageUrl) {
+          mediaUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
+        }
+        await sleep(350)
+      }
+      rounds.push({
+        room_id: roomId,
+        round_number: i + 1,
+        question_type: q.type,
+        correct_answer: q.correctAnswer,
+        options: q.options,
+        media_url: mediaUrl,
+        clue: q.clue,
+        time_limit: q.timeLimit,
+      })
+    }
 
     const { error: deleteError } = await supabase
       .from('rounds')

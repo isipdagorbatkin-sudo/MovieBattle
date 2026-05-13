@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
@@ -41,12 +41,28 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
   const [playerScores, setPlayerScores] = useState<Record<string, number>>({})
   const router = useRouter()
   const supabase = createClient()
+  const isPollingRef = useRef(false)
 
   useEffect(() => {
     const scores: Record<string, number> = {}
     players.forEach(p => { scores[p.player_id] = p.score })
     setPlayerScores(scores)
   }, [players])
+
+  useEffect(() => {
+    if (isPollingRef.current) return
+    isPollingRef.current = true
+    const poll = setInterval(async () => {
+      const { data } = await supabase
+        .from('room_players')
+        .select('*, player:profiles(*)')
+        .eq('room_id', room.id)
+      if (data) {
+        setPlayers(data)
+      }
+    }, 2000)
+    return () => { clearInterval(poll); isPollingRef.current = false }
+  }, [room.id])
 
   useEffect(() => {
     const loadRounds = async () => {
@@ -251,9 +267,27 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                       </div>
                     ) : room.game_mode === 'character' ? (
                       <div className="mb-6 py-4">
-                        <User className="w-10 h-10 text-pink-400 mx-auto mb-4" />
-                        <p className="text-lg text-white/50 mb-2">Какой фильм/сериал/аниме?</p>
-                        {currentRound.clue && (
+                        <p className="text-lg text-white/50 mb-4">Угадай по фото персонажа</p>
+                        {currentRound.media_url ? (
+                          <div className="max-w-xs mx-auto mb-4">
+                            <img
+                              src={currentRound.media_url}
+                              alt="Персонаж"
+                              className="w-full rounded-xl shadow-2xl"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none'
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="mb-6">
+                            <User className="w-16 h-16 text-pink-400/50 mx-auto mb-4" />
+                          </div>
+                        )}
+                        {currentRound.clue && currentRound.media_url && (
+                          <p className="text-sm text-white/40 mt-2">Персонаж: &ldquo;{currentRound.clue}&rdquo;</p>
+                        )}
+                        {!currentRound.media_url && currentRound.clue && (
                           <p className="text-2xl font-bold text-white/90 mt-2">&ldquo;{currentRound.clue}&rdquo;</p>
                         )}
                       </div>
@@ -265,7 +299,13 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                     )}
 
                     <p className="text-sm text-white/30 mt-4">
-                      Угадай по описанию
+                        {room.game_mode === 'character'
+                          ? 'Угадай аниме/фильм/сериал по фото персонажа'
+                          : room.game_mode === 'quote'
+                            ? 'Угадай по цитате'
+                            : room.game_mode === 'blur'
+                              ? 'Угадай по размытому изображению'
+                              : 'Угадай по описанию'}
                     </p>
                   </>
                 )}

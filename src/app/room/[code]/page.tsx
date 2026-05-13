@@ -83,13 +83,13 @@ export default function RoomLobbyPage() {
   }
 
   const handleReady = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || !room) return
-    const player = players.find(p => p.player_id === user.id)
-    if (player) {
-      await supabase.from('room_players').update({ is_ready: !player.is_ready }).eq('id', player.id)
-      fetchRoom(code)
-    }
+    if (!room) return
+    const res = await fetch('/api/rooms/ready', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomId: room.id }),
+    })
+    if (res.ok) fetchRoom(code)
   }
 
   const allReady = players.length >= 2 && players.every(p => p.is_ready)

@@ -1,45 +1,45 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p'
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const path = searchParams.get('path')
-  const url = searchParams.get('url')
-
-  let imageUrl: string
-
-  if (url) {
-    imageUrl = url
-  } else if (path) {
-    imageUrl = `${TMDB_IMAGE_BASE}${path}`
-  } else {
-    return new NextResponse('Missing path or url', { status: 400 })
-  }
+export async function GET(req: NextRequest) {
+  const url = req.nextUrl.searchParams.get('url')
+  if (!url) return NextResponse.json({ error: 'Missing url' }, { status: 400 })
 
   try {
-    const res = await fetch(imageUrl, {
-      headers: {
-        'User-Agent': 'MovieBattle/1.0 (movie-battle-app)',
-        'Accept': 'image/webp,image/*,*/*;q=0.8',
-      },
-      signal: AbortSignal.timeout(10000),
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
 
-    if (!res.ok) {
-      return new NextResponse('Image not found', { status: 404 })
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; ImageProxy/1.0)',
+        'Accept': 'image/*, */*',
+      },
+    })
+    clearTimeout(timeout)
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: `Upstream ${response.status}` },
+        { status: response.status }
+      )
     }
 
-    const blob = await res.blob()
+    const blob = await response.blob()
+    const contentType = response.headers.get('content-type') || 'image/jpeg'
+
     return new NextResponse(blob, {
       status: 200,
       headers: {
-        'Content-Type': res.headers.get('Content-Type') || 'image/jpeg',
-        'Cache-Control': 'public, max-age=2592000, immutable',
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=86400',
         'Access-Control-Allow-Origin': '*',
       },
     })
-  } catch {
-    return new NextResponse('Failed to fetch image', { status: 502 })
+  } catch (err: any) {
+    console.error('[Image Proxy]', err.message)
+    return NextResponse.json(
+      { error: `Proxy fetch failed: ${err.message}` },
+      { status: 502 }
+    )
   }
 }

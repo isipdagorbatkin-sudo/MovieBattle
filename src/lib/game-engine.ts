@@ -57,6 +57,7 @@ export async function generateQuestions(
       type,
       mediaUrl: null,
       clue,
+      characterImage: isCharacter && entry.characterImage ? entry.characterImage : null,
       options,
       correctAnswer: entry.title,
       timeLimit: gameMode === 'timer' ? 8000 : 15000,

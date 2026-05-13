@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { Clapperboard, Sparkles, Swords, X } from 'lucide-react'
+import { Clapperboard, Sparkles, Swords, X, User, MessageSquare, Image as ImageIcon, Zap } from 'lucide-react'
 import type { Category, GameMode } from '@/types'
 
 interface SoloGameModalProps {
@@ -18,8 +18,17 @@ const categories: { value: Category; label: string; icon: typeof Clapperboard; c
   { value: 'anime', label: 'Аниме', icon: Sparkles, color: 'from-pink-500 to-rose-500' },
 ]
 
+const modes: { value: GameMode; label: string; desc: string; icon: typeof User; color: string }[] = [
+  { value: 'classic', label: 'Классический', desc: 'Угадай по описанию', icon: Clapperboard, color: 'from-blue-500 to-cyan-500' },
+  { value: 'character', label: 'Персонаж', desc: 'Угадай по фото персонажа', icon: User, color: 'from-pink-500 to-rose-500' },
+  { value: 'quote', label: 'Цитата', desc: 'Угадай по цитате', icon: MessageSquare, color: 'from-yellow-500 to-orange-500' },
+  { value: 'blur', label: 'Размытие', desc: 'Угадай по размытому изображению', icon: ImageIcon, color: 'from-green-500 to-emerald-500' },
+  { value: 'timer', label: 'На время', desc: 'Угадай за 8 секунд', icon: Zap, color: 'from-red-500 to-pink-500' },
+]
+
 export function SoloGameModal({ open, onClose, onStart, loading }: SoloGameModalProps) {
   const [category, setCategory] = useState<Category>('movies')
+  const [gameMode, setGameMode] = useState<GameMode>('classic')
 
   if (!open) return null
 
@@ -44,7 +53,7 @@ export function SoloGameModal({ open, onClose, onStart, loading }: SoloGameModal
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">Одиночная игра</h2>
-            <p className="text-sm text-white/40">Выбери категорию</p>
+            <p className="text-sm text-white/40">Выбери настройки</p>
           </div>
         </div>
 
@@ -74,12 +83,40 @@ export function SoloGameModal({ open, onClose, onStart, loading }: SoloGameModal
             </div>
           </div>
 
+          <div>
+            <p className="text-sm font-medium text-white/70 mb-3">Режим</p>
+            <div className="grid grid-cols-2 gap-2">
+              {modes.map((mode) => {
+                const Icon = mode.icon
+                return (
+                  <button
+                    key={mode.value}
+                    onClick={() => setGameMode(mode.value)}
+                    className={`p-3 rounded-xl border transition-all text-center ${
+                      gameMode === mode.value
+                        ? `bg-gradient-to-br ${mode.color} border-transparent shadow-lg`
+                        : 'border-white/10 hover:border-white/20 bg-white/5'
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 mx-auto mb-1 ${gameMode === mode.value ? 'text-white' : 'text-white/50'}`} />
+                    <p className={`text-xs font-medium ${gameMode === mode.value ? 'text-white' : 'text-white/70'}`}>
+                      {mode.label}
+                    </p>
+                    <p className={`text-[10px] mt-0.5 ${gameMode === mode.value ? 'text-white/70' : 'text-white/30'}`}>
+                      {mode.desc}
+                    </p>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <Button
             variant="primary"
             size="lg"
             className="w-full"
             loading={loading}
-            onClick={() => onStart(category, 'classic')}
+            onClick={() => onStart(category, gameMode)}
           >
             <Swords className="w-4 h-4 mr-2" />
             Начать игру

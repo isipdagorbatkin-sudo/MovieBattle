@@ -172,20 +172,34 @@ export function useRoom() {
   }, [])
 
   const fetchRoom = useCallback(async (code: string) => {
-    const { data: roomData } = await supabase
-      .from('rooms')
-      .select('*')
-      .eq('code', code)
-      .maybeSingle()
+    try {
+      const { data: roomData, error: roomErr } = await supabase
+        .from('rooms')
+        .select('*')
+        .eq('code', code)
+        .maybeSingle()
 
-    if (roomData) {
-      setRoom(roomData)
-      const { data: playerData } = await supabase
-        .from('room_players')
-        .select('*, player:profiles(*)')
-        .eq('room_id', roomData.id)
+      if (roomErr) {
+        console.error('[fetchRoom] room error:', roomErr)
+        return
+      }
 
-      setPlayers(playerData || [])
+      if (roomData) {
+        setRoom(roomData)
+        const { data: playerData, error: playerErr } = await supabase
+          .from('room_players')
+          .select('*, player:profiles(*)')
+          .eq('room_id', roomData.id)
+
+        if (playerErr) {
+          console.error('[fetchRoom] players error:', playerErr)
+          return
+        }
+
+        setPlayers(playerData || [])
+      }
+    } catch (err) {
+      console.error('[fetchRoom] unexpected error:', err)
     }
   }, [])
 
