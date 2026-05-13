@@ -23,15 +23,18 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRoom } from '@/hooks/use-room'
+import { SoloGameModal } from '@/components/game/solo-game-modal'
+import type { Category, GameMode } from '@/types'
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<any>(null)
   const [recentMatches, setRecentMatches] = useState<any[]>([])
   const [stats, setStats] = useState({ total: 0, wins: 0, score: 0 })
   const [loading, setLoading] = useState(true)
+  const [soloModalOpen, setSoloModalOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-  const { createSoloGame } = useRoom()
+  const { createSoloGame, loading: roomLoading } = useRoom()
 
   useEffect(() => {
     const load = async () => {
@@ -107,7 +110,7 @@ export default function DashboardPage() {
                 Create Room
               </Button>
             </Link>
-            <Button variant="outline" size="lg" onClick={() => createSoloGame()}>
+            <Button variant="outline" size="lg" onClick={() => setSoloModalOpen(true)}>
               <Swords className="w-4 h-4 mr-2" />
               Play Solo
             </Button>
@@ -179,7 +182,7 @@ export default function DashboardPage() {
             </Card>
           </Link>
 
-          <button onClick={() => createSoloGame()} className="text-left">
+          <button onClick={() => setSoloModalOpen(true)} className="text-left">
             <Card className="border-green-500/20 bg-gradient-to-br from-green-600/10 to-emerald-600/10 backdrop-blur-xl hover:from-green-600/20 hover:to-emerald-600/20 transition-all group cursor-pointer w-full">
               <CardContent className="p-6">
                 <Swords className="w-8 h-8 text-green-400 mb-3 group-hover:scale-110 transition-transform" />
@@ -251,6 +254,16 @@ export default function DashboardPage() {
           )}
         </motion.div>
       </div>
+
+      <SoloGameModal
+        open={soloModalOpen}
+        onClose={() => setSoloModalOpen(false)}
+        onStart={(category: Category, gameMode: GameMode) => {
+          setSoloModalOpen(false)
+          createSoloGame(category, gameMode)
+        }}
+        loading={roomLoading}
+      />
     </div>
   )
 }
