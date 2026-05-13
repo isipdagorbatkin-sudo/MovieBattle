@@ -180,13 +180,13 @@ async function fetchAnimeByName(name: string): Promise<{ title: string; imageUrl
       `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(name)}&limit=1`,
       {
         headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(3000),
       }
     )
-    if (!res.ok) return null
+    if (!res.ok) return { title: name, imageUrl: null, malId: null }
     const data = await res.json()
     const anime = data?.data?.[0]
-    if (!anime) return null
+    if (!anime) return { title: name, imageUrl: null, malId: null }
 
     const title = anime.title_english || anime.title || name
     const imageUrl = anime.images?.jpg?.large_image_url
@@ -196,7 +196,7 @@ async function fetchAnimeByName(name: string): Promise<{ title: string; imageUrl
 
     return { title, imageUrl, malId }
   } catch {
-    return null
+    return { title: name, imageUrl: null, malId: null }
   }
 }
 
@@ -218,9 +218,9 @@ export async function generateQuestions(
         usedNames.add(name.toLowerCase())
 
         const result = await fetchAnimeByName(name)
-        if (!result) continue
+        const correctName = result?.title || name
+        const mediaUrl = result?.imageUrl || null
 
-        const correctName = result.title
         if (usedNames.has(correctName.toLowerCase())) continue
         usedNames.add(correctName.toLowerCase())
 
@@ -231,10 +231,10 @@ export async function generateQuestions(
         const options = generateOptions(correctName, allNames, gameMode)
 
         questions.push({
-          id: `anime-jikan-${result.malId || i}`,
-          type: gameMode === 'quote' ? 'quote' : 'poster',
-          mediaUrl: result.imageUrl,
-          clue: null,
+          id: `anime-${result?.malId || i}`,
+          type: mediaUrl ? (gameMode === 'quote' ? 'quote' : 'poster') : 'description',
+          mediaUrl,
+          clue: mediaUrl ? null : `Popular romance anime`,
           options,
           correctAnswer: correctName,
           timeLimit: gameMode === 'timer' ? 8000 : 15000,
@@ -320,6 +320,26 @@ function createFallbackQuestion(category: Category, gameMode: GameMode, index: n
       'A young girl journeys to a mystical land to find her voice',
       'Two siblings grow up on a hill overlooking a harbor',
       'A summer love story between two high school students',
+      'A high schooler helps a quiet girl make friends',
+      'A boy and a girl pretend to date but catch real feelings',
+      'A girl learns to love herself through cosplay',
+      'Two childhood friends reunite in high school',
+      'A musician and a deaf girl find harmony together',
+      'A shut-in gamer finds love in an MMO',
+      'An office romance between otaku coworkers',
+      'A boy travels through time to fix his mistakes',
+      'A girl from the countryside moves to the big city',
+      'Rival families force a marriage between two teens',
+      'A genius and a slacker form an unlikely romance',
+      'A prince must marry to save his kingdom',
+      'A girl discovers she has magical powers on her birthday',
+      'A dragon girl and a human boy become unlikely friends',
+      'A self-proclaimed villainess tries to avoid doom flags',
+      'A cold duke of the north falls for a kind commoner',
+      'A poor girl becomes a maidservant for a cold noble',
+      'A girl writes letters to her future self for a friend',
+      'A pool of water grants wishes but at a cost',
+      'A boy investigates his sisters death in a small town',
     ],
     movies: [
       'A thief who enters dreams to steal secrets',
@@ -368,14 +388,7 @@ function createFallbackQuestion(category: Category, gameMode: GameMode, index: n
   }
 
   const fallbackNames: Record<Category, string[]> = {
-    anime: [
-      'Your Name', 'Spirited Away', 'Howls Moving Castle', 'The Garden of Words',
-      'The Wind Rises', 'Nausicaä of the Valley of the Wind', 'My Neighbor Totoro',
-      'Castle in the Sky', 'Kikis Delivery Service', 'Porco Rosso',
-      'A Silent Voice', 'Weathering With You', 'Princess Mononoke', 'Paprika',
-      'The Girl Who Leapt Through Time', 'Wolf Children', 'Summer Wars',
-      'Children Who Chase Lost Voices', 'From Up on Poppy Hill', 'Ocean Waves',
-    ],
+    anime: CURATED_ANIME,
     movies: [
       'Inception', 'The Dark Knight', 'Interstellar', 'Pulp Fiction',
       'Fight Club', 'The Matrix', 'Forrest Gump', 'The Shawshank Redemption',
