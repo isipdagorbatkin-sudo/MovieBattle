@@ -21,9 +21,14 @@ function wordDistance(a: string, b: string): number {
   return matches / Math.max(aWords.length, bWords.length)
 }
 
-function tmdbImageUrl(path: string | null): string | null {
+function tmdbImage(path: string | null): string | null {
   if (!path) return null
   return `/api/image-proxy?path=${encodeURIComponent('/w500' + path)}`
+}
+
+function shikimoriImage(path: string | null): string | null {
+  if (!path) return null
+  return `/api/image-proxy?url=${encodeURIComponent('https://shikimori.one' + path)}`
 }
 
 async function fetchTMDBPopular(type: 'movie' | 'tv'): Promise<any[]> {
@@ -92,9 +97,7 @@ export async function generateQuestions(
           questions.push({
             id: `anime-${anime.id}`,
             type: gameMode === 'quote' ? 'quote' : 'poster',
-            mediaUrl: anime.image?.original
-              ? `https://shikimori.one${anime.image.original}`
-              : null,
+            mediaUrl: shikimoriImage(anime.image?.original || anime.image?.preview || null),
             clue: anime.description?.slice(0, 200) || null,
             options,
             correctAnswer: correctName,
@@ -124,7 +127,7 @@ export async function generateQuestions(
           questions.push({
             id: `${type}-${item.id}`,
             type: gameMode === 'classic' ? 'poster' : gameMode === 'quote' ? 'quote' : 'description',
-            mediaUrl: tmdbImageUrl(item.poster_path),
+            mediaUrl: tmdbImage(item.backdrop_path || item.poster_path),
             clue: item.overview?.slice(0, 200) || null,
             options,
             correctAnswer: title,

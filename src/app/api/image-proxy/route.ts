@@ -5,19 +5,25 @@ const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p'
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const path = searchParams.get('path')
+  const url = searchParams.get('url')
 
-  if (!path) {
-    return new NextResponse('Missing path', { status: 400 })
+  let imageUrl: string
+
+  if (url) {
+    imageUrl = url
+  } else if (path) {
+    imageUrl = `${TMDB_IMAGE_BASE}${path}`
+  } else {
+    return new NextResponse('Missing path or url', { status: 400 })
   }
-
-  const imageUrl = `${TMDB_IMAGE_BASE}${path}`
 
   try {
     const res = await fetch(imageUrl, {
       headers: {
-        'User-Agent': 'MovieBattle/1.0',
+        'User-Agent': 'MovieBattle/1.0 (movie-battle-app)',
         'Accept': 'image/webp,image/*,*/*;q=0.8',
       },
+      signal: AbortSignal.timeout(10000),
     })
 
     if (!res.ok) {
