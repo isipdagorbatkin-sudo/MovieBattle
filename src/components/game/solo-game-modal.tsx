@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { Film, Tv, Sparkles, Gamepad2, Swords, X } from 'lucide-react'
+import { Clapperboard, Sparkles, Gamepad2, Swords, X } from 'lucide-react'
 import type { Category, GameMode } from '@/types'
 
 interface SoloGameModalProps {
@@ -13,9 +13,8 @@ interface SoloGameModalProps {
   loading?: boolean
 }
 
-const categories: { value: Category; label: string; icon: typeof Film; color: string }[] = [
-  { value: 'movies', label: 'Movies', icon: Film, color: 'from-purple-500 to-indigo-500' },
-  { value: 'series', label: 'Series', icon: Tv, color: 'from-blue-500 to-cyan-500' },
+const categories: { value: Category; label: string; icon: typeof Clapperboard; color: string }[] = [
+  { value: 'movies', label: 'Movies & Series', icon: Clapperboard, color: 'from-purple-500 to-indigo-500' },
   { value: 'anime', label: 'Anime', icon: Sparkles, color: 'from-pink-500 to-rose-500' },
 ]
 
@@ -61,7 +60,7 @@ export function SoloGameModal({ open, onClose, onStart, loading }: SoloGameModal
         <div className="space-y-5">
           <div>
             <p className="text-sm font-medium text-white/70 mb-3">Category</p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {categories.map((cat) => {
                 const Icon = cat.icon
                 return (
