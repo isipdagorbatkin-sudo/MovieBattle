@@ -56,9 +56,10 @@ async function proxy(req: NextRequest) {
     console.error(`[Supabase Proxy] ${req.method} ${path}${search} -> ${response.status}: ${resBody.slice(0, 500)}`)
   }
 
+  const SKIP_RES_HEADERS = new Set(['set-cookie', 'content-encoding', 'transfer-encoding', 'content-length'])
   const resHeaders: Record<string, string> = {}
   response.headers.forEach((value, key) => {
-    if (key.toLowerCase() !== 'set-cookie') {
+    if (!SKIP_RES_HEADERS.has(key.toLowerCase())) {
       resHeaders[key] = value
     }
   })
