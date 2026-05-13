@@ -18,16 +18,22 @@ const categories: { value: Category; label: string; icon: typeof Clapperboard; c
   { value: 'anime', label: 'Аниме', icon: Sparkles, color: 'from-pink-500 to-rose-500' },
 ]
 
-const modes: { value: GameMode; label: string; desc: string; icon: typeof User; color: string }[] = [
+const allModes: { value: GameMode; label: string; desc: string; icon: typeof User; color: string }[] = [
   { value: 'classic', label: 'Классический', desc: 'Угадай по описанию', icon: Clapperboard, color: 'from-blue-500 to-cyan-500' },
   { value: 'character', label: 'Персонаж', desc: 'Угадай по фото персонажа', icon: User, color: 'from-pink-500 to-rose-500' },
   { value: 'blur', label: 'Размытие', desc: 'Угадай по размытому изображению', icon: ImageIcon, color: 'from-green-500 to-emerald-500' },
   { value: 'timer', label: 'На время', desc: 'Угадай за 8 секунд', icon: Zap, color: 'from-red-500 to-pink-500' },
 ]
 
+function getModes(category: Category) {
+  if (category === 'anime') return allModes.filter(m => m.value !== 'blur')
+  return allModes.filter(m => m.value !== 'character')
+}
+
 export function SoloGameModal({ open, onClose, onStart, loading }: SoloGameModalProps) {
   const [category, setCategory] = useState<Category>('movies')
   const [gameMode, setGameMode] = useState<GameMode>('classic')
+  const modes = getModes(category)
 
   if (!open) return null
 
@@ -60,12 +66,18 @@ export function SoloGameModal({ open, onClose, onStart, loading }: SoloGameModal
           <div>
             <p className="text-sm font-medium text-white/70 mb-3">Категория</p>
             <div className="grid grid-cols-2 gap-2">
-              {categories.map((cat) => {
+                {categories.map((cat) => {
                 const Icon = cat.icon
                 return (
                   <button
                     key={cat.value}
-                    onClick={() => setCategory(cat.value)}
+                    onClick={() => {
+                      setCategory(cat.value)
+                      const avail = getModes(cat.value)
+                      if (!avail.find(m => m.value === gameMode)) {
+                        setGameMode(avail[0].value)
+                      }
+                    }}
                     className={`p-3 rounded-xl border transition-all text-center ${
                       category === cat.value
                         ? `bg-gradient-to-br ${cat.color} border-transparent shadow-lg`

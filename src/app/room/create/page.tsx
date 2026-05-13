@@ -14,17 +14,23 @@ const categories: { value: Category; label: string; icon: typeof Film; desc: str
   { value: 'anime', label: 'Аниме', icon: Sparkles, desc: 'Романтическое аниме', color: 'from-pink-500 to-rose-500' },
 ]
 
-const gameModes: { value: GameMode; label: string; desc: string }[] = [
+const allModes: { value: GameMode; label: string; desc: string }[] = [
   { value: 'classic', label: 'Классический', desc: 'Угадай по описанию' },
-  { value: 'character', label: 'Персонаж', desc: 'Угадай по персонажу' },
+  { value: 'character', label: 'Персонаж', desc: 'Угадай по фото персонажа' },
   { value: 'blur', label: 'Размытие', desc: 'Размытое изображение' },
   { value: 'timer', label: 'На время', desc: 'Быстрые вопросы' },
 ]
+
+function getModes(category: Category) {
+  if (category === 'anime') return allModes.filter(m => m.value !== 'blur')
+  return allModes.filter(m => m.value !== 'character')
+}
 
 export default function CreateRoomPage() {
   const [category, setCategory] = useState<Category>('movies')
   const [gameMode, setGameMode] = useState<GameMode>('classic')
   const { createRoom, loading } = useRoom()
+  const modes = getModes(category)
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -92,7 +98,7 @@ export default function CreateRoomPage() {
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {gameModes.map((mode) => (
+                {modes.map((mode) => (
                   <button
                     key={mode.value}
                     onClick={() => setGameMode(mode.value)}

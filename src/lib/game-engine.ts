@@ -41,14 +41,21 @@ export async function generateQuestions(
   gameMode: GameMode,
   count: number = 10
 ): Promise<QuestionData[]> {
-  const source = category === 'anime' ? ANIME : [...MOVIES, ...SERIES]
+  const isCharacter = gameMode === 'character'
+  const allSource = category === 'anime' ? ANIME : [...MOVIES, ...SERIES]
+  const source = isCharacter ? allSource.filter(e => e.character) : allSource
+
+  if (source.length === 0) {
+    const fallback = shuffleArray(allSource)
+    source.push(...fallback.slice(0, Math.min(count, fallback.length)))
+  }
+
   const shuffled = shuffleArray(source)
   const selected = shuffled.slice(0, Math.min(count, shuffled.length))
 
-  const allTitles = source.map(e => e.title)
+  const allTitles = allSource.map(e => e.title)
 
   return shuffleArray(selected.map((entry: CuratedEntry, i: number) => {
-    const isCharacter = gameMode === 'character'
     const clue = isCharacter && entry.character ? entry.character : entry.clue
     const type = isCharacter ? 'character' : 'description'
     const options = generateOptions(entry.title, allTitles)
