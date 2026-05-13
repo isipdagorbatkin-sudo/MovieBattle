@@ -80,7 +80,7 @@ export const CHARACTER_NAME_MAP: Record<string, string> = {
   'Юри Кацуки': 'Yuri Katsuki',
   'Миё Саймори': 'Miyo Saimori',
   'Сираюки': 'Shirayuki',
-  'Сэнко-сан': 'Senko-san',
+  'Сэнко-сан': 'Senko San',
   'Мисаки Аюдзава': 'Misaki Ayuzawa',
   'Мэгуми Нода': 'Megumi Noda',
   'Тайки Иномата': 'Taiki Inomata',
