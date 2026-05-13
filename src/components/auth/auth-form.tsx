@@ -31,27 +31,22 @@ export function AuthForm({ mode }: AuthFormProps) {
     setError('')
 
     try {
-      if (mode === 'register') {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              username: username.toLowerCase(),
-              display_name: displayName || username,
-            },
-          },
-        })
-        if (signUpError) throw signUpError
-        router.push('/dashboard')
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (signInError) throw signInError
-        router.push('/dashboard')
-      }
+      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register'
+      const body = mode === 'login'
+        ? { email, password }
+        : { email, password, username, displayName: displayName || username }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || 'Authentication failed')
+
+      router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
       setError(err.message)
