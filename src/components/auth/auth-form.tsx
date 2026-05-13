@@ -55,6 +55,16 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       if (!res.ok) throw new Error(data.error || 'Authentication failed')
 
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        })
+      } else if (data.user?.access_token) {
+        window.location.href = '/dashboard?registered=true'
+        return
+      }
+
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {

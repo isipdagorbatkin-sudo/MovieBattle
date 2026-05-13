@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export async function POST(request: Request) {
   try {
@@ -9,51 +11,50 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 20000)
 
-    const response = NextResponse.json({ success: true })
-
-    const supabase = createServerClient(supabaseUrl, supabaseKey, {
-      cookies: {
-        getAll() {
-          const cookies: { name: string; value: string }[] = []
-          request.headers.get('Cookie')?.split(';').forEach(c => {
-            const [name, ...rest] = c.trim().split('=')
-            if (name) cookies.push({ name, value: rest.join('=') })
-          })
-          return cookies
+    let res: Response
+    try {
+      res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON_KEY,
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options as any)
-          })
-        },
-      },
-    })
-
-    console.log('[Auth/Register] Attempting signUp for:', email)
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username: (username || email.split('@')[0]).toLowerCase(),
-          display_name: displayName || username || email.split('@')[0],
-        },
-      },
-    })
-
-    if (error) {
-      console.error('[Auth/Register] signUp error:', error.message)
-      return NextResponse.json({ error: error.message }, { status: 400 })
+        body: JSON.stringify({
+          email,
+          password,
+          data: {
+            username: (username || email.split('@')[0]).toLowerCase(),
+            display_name: displayName || username || email.split('@')[0],
+          },
+        }),
+        signal: controller.signal,
+      })
+    } finally {
+      clearTimeout(timeout)
     }
 
-    console.log('[Auth/Register] signUp success:', data.user?.id)
-    return response
+    const data = await res.json()
+
+    if (!res.ok) {
+      console.error('[Auth/Register] error:', data)
+      return NextResponse.json({ error: data.msg || data.error_description || data.error || 'Registration failed' }, { status: 400 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      user: data,
+      session: data.access_token ? {
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      } : null,
+    })
   } catch (error: any) {
-    console.error('[Auth/Register] exception:', error.message)
+    if (error.name === 'AbortError') {
+      return NextResponse.json({ error: 'Server timeout. Try again.' }, { status: 504 })
+    }
     return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 })
   }
 }
