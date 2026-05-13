@@ -31,10 +31,29 @@ function shikimoriImage(path: string | null): string | null {
   return `/api/image-proxy?url=${encodeURIComponent('https://shikimori.one' + path)}`
 }
 
-async function fetchJikanImage(name: string): Promise<string | null> {
+async function fetchJikanImageByMalId(malId: number): Promise<string | null> {
   try {
     const res = await fetch(
-      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(name)}&limit=1`,
+      `https://api.jikan.moe/v4/anime/${malId}`,
+      {
+        headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
+        signal: AbortSignal.timeout(4000),
+      }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const imageUrl = data?.data?.images?.jpg?.large_image_url
+    if (!imageUrl) return null
+    return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
+  } catch {
+    return null
+  }
+}
+
+async function fetchJikanImageByName(name: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(name)}&limit=3`,
       {
         headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
         signal: AbortSignal.timeout(4000),
@@ -44,7 +63,8 @@ async function fetchJikanImage(name: string): Promise<string | null> {
     const data = await res.json()
     const results = data.data
     if (!results || results.length === 0) return null
-    const imageUrl = results[0]?.images?.jpg?.large_image_url
+    const best = results[0]
+    const imageUrl = best?.images?.jpg?.large_image_url
     if (!imageUrl) return null
     return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
   } catch {
@@ -215,8 +235,12 @@ export async function generateQuestions(
           const correctName = anime.russian || anime.name
           const options = generateOptions(correctName, allNames, gameMode)
 
-          const jikanImage = await fetchJikanImage(correctName)
-          const mediaUrl = jikanImage || shikimoriImage(anime.image?.original || anime.image?.preview || null)
+          const malId = anime.mal_id
+          let mediaUrl = malId
+            ? await fetchJikanImageByMalId(malId)
+            : await fetchJikanImageByName(correctName)
+          if (!mediaUrl) mediaUrl = await fetchJikanImageByName(correctName)
+          if (!mediaUrl) mediaUrl = shikimoriImage(anime.image?.original || anime.image?.preview || null)
 
           questions.push({
             id: `anime-${anime.id}`,
