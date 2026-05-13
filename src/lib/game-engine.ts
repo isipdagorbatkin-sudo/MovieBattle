@@ -34,12 +34,17 @@ function shikimoriImage(path: string | null): string | null {
 async function fetchJikanImage(name: string): Promise<string | null> {
   try {
     const res = await fetch(
-      `/api/jinkin?q=${encodeURIComponent(name)}`,
-      { signal: AbortSignal.timeout(3000) }
+      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(name)}&limit=1`,
+      {
+        headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
+        signal: AbortSignal.timeout(4000),
+      }
     )
     if (!res.ok) return null
     const data = await res.json()
-    const imageUrl = data?.data?.images?.jpg?.large_image_url
+    const results = data.data
+    if (!results || results.length === 0) return null
+    const imageUrl = results[0]?.images?.jpg?.large_image_url
     if (!imageUrl) return null
     return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
   } catch {
