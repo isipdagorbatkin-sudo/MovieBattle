@@ -115,18 +115,32 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
 
   useEffect(() => {
     if (!currentRound || roundIndex < 0) return
-    if (hasAnswered || timeLeft === 0) {
-      const delay = setTimeout(() => {
-        const next = roundIndex + 1
-        if (next < rounds.length) {
-          setRoundIndex(next)
-        } else {
-          setGameOver(true)
-        }
-      }, 2000)
+    const transition = () => {
+      const next = roundIndex + 1
+      if (next < rounds.length) {
+        setRoundIndex(next)
+      } else {
+        setGameOver(true)
+      }
+    }
+    if (hasAnswered) {
+      const delay = setTimeout(transition, 2000)
       return () => clearTimeout(delay)
     }
-  }, [hasAnswered, timeLeft])
+  }, [hasAnswered])
+
+  useEffect(() => {
+    if (!currentRound || roundIndex < 0 || hasAnswered || timeLeft !== 0) return
+    const delay = setTimeout(() => {
+      const next = roundIndex + 1
+      if (next < rounds.length) {
+        setRoundIndex(next)
+      } else {
+        setGameOver(true)
+      }
+    }, 2000)
+    return () => clearTimeout(delay)
+  }, [timeLeft])
 
   useEffect(() => {
     if (gameOver) {
@@ -276,9 +290,6 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                           <div className="mb-6">
                             <User className="w-16 h-16 text-pink-400/50 mx-auto mb-4" />
                           </div>
-                        )}
-                        {currentRound.clue && currentRound.media_url && (
-                          <p className="text-sm text-white/40 mt-2">Персонаж: &ldquo;{currentRound.clue}&rdquo;</p>
                         )}
                         {!currentRound.media_url && currentRound.clue && (
                           <p className="text-2xl font-bold text-white/90 mt-2">&ldquo;{currentRound.clue}&rdquo;</p>

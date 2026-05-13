@@ -59,10 +59,16 @@ export async function generateQuestions(
     const clue = isCharacter && entry.character ? entry.character : entry.clue
     const type = isCharacter ? 'character' : 'description'
     const options = generateOptions(entry.title, allTitles)
+    let mediaUrl: string | null = null
+    if (isCharacter && entry.characterImage) {
+      mediaUrl = entry.characterImage
+    } else if (!isCharacter && (gameMode === 'blur' || gameMode === 'classic') && entry.posterImage) {
+      mediaUrl = entry.posterImage
+    }
     return {
       id: `${category}-curated-${i}`,
       type,
-      mediaUrl: null,
+      mediaUrl,
       clue,
       characterImage: isCharacter && entry.characterImage ? entry.characterImage : null,
       options,

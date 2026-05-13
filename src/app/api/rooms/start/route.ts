@@ -45,6 +45,8 @@ export async function POST(request: Request) {
         if (imageUrl) {
           mediaUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
         }
+      } else if (mediaUrl) {
+        mediaUrl = `/api/image-proxy?url=${encodeURIComponent(mediaUrl)}`
       }
       rounds.push({
         room_id: roomId,
