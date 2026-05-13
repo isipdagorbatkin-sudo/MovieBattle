@@ -52,30 +52,83 @@ async function fetchJikanImage(name: string): Promise<string | null> {
   }
 }
 
-async function fetchTMDBPopular(type: 'movie' | 'tv'): Promise<any[]> {
-  if (!TMDB_KEY) return []
-  const endpoint = type === 'movie' ? 'movie' : 'tv'
-  const allItems: any[] = []
-  const seen = new Set<number>()
+const CURATED_MOVIES = [
+  19995, 76600, 634649, 299534, 299536, 597, 475557, 120, 27205, 157336,
+  872585, 98, 77338, 168259, 22, 603, 550, 680, 120, 121, 122,
+  671, 672, 673, 674, 675, 767, 12444, 12445, 438631, 522627,
+  106646, 11324, 497, 278, 13, 101, 280, 18, 807, 281957,
+  49051, 49047, 57165, 10528, 107, 100, 115, 245891, 615457, 155,
+  244786, 238, 11, 27205, 157336, 155, 244786, 238, 11, 680,
+  550, 155, 244786, 27205, 157336, 27205, 157336,
+  424, 769, 12445, 16869, 10138, 1726, 10193, 10681, 114, 118,
+  135, 137, 128, 134, 122, 121, 120,
+  197, 813, 1124, 141, 9552, 77, 747, 954, 62, 78,
+  508, 769, 424, 238, 807, 200, 157336, 168, 1452, 950,
+  49026, 76341, 181812, 495764, 438148, 335984, 137113, 106646,
+  152601, 10138, 1726, 157350, 246741, 49051, 49047, 57165,
+  14161, 14164, 14175, 14180, 14199,
+  105, 205, 807, 826, 274, 373571, 464052, 335983, 297762, 315635,
+  376812, 420818, 438631, 475557, 495764, 496243, 497698,
+  508442, 524434, 531876, 536554, 537915,
+  27205, 157336, 49026, 168259, 245891, 118340, 76341,
+  278, 238, 680, 550, 155, 807, 274, 497, 13, 101,
+  680, 155, 550, 238, 278, 497, 13, 101,
+  155, 550, 680, 238, 278, 13, 101, 497,
+]
 
-  for (const page of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
-    try {
-      const res = await fetch(
-        `${TMDB_BASE}/${endpoint}/popular?api_key=${TMDB_KEY}&language=en-US&page=${page}`,
-        { next: { revalidate: 3600 } }
-      )
-      if (!res.ok) break
-      const data = await res.json()
-      for (const item of (data.results || [])) {
-        if (!seen.has(item.id)) {
-          seen.add(item.id)
-          allItems.push(item)
-        }
-      }
-    } catch { break }
+const CURATED_SERIES = [
+  1396, 1399, 1400, 1402, 1403, 1404, 1405, 1406, 1407, 1408,
+  1409, 1411, 1412, 1413, 1415, 1416, 1417, 1418, 1419, 1420,
+  1421, 1422, 1423, 1424, 1425, 1426, 1427, 1428, 1429, 1430,
+  60625, 60572, 60735, 60708, 60059, 63174, 63130, 66732,
+  71912, 71788, 76479, 82883, 80557, 85552, 85553, 85554,
+  93484, 93540, 94997, 100088, 100148, 105509, 106541,
+  108978, 111837, 112484, 114565, 115036, 115149, 119051,
+  120014, 121361, 123535, 124099, 124218, 124905, 126595,
+  127656, 128476, 129261, 130542, 130802, 131950, 132364,
+  132381, 133960, 134158, 134292, 134374, 134382, 134434,
+  135215, 136765, 137613, 137824, 138338, 138489, 138501,
+  138821, 139579, 139708, 139932, 140238, 140245, 140622,
+  140835, 140964, 141116, 141150, 141163, 141177,
+  1429, 1430, 1399, 1402, 1403, 1404, 1405, 1406, 1408,
+  1412, 1396, 1400, 1407, 1409, 1411,
+  60625, 60572, 60735, 60708, 60059,
+  100, 1668, 4380, 4429, 4542, 4611, 4612, 4614, 4615,
+  4620, 4621, 4622, 4623, 4624, 4625, 4626, 4627, 4628, 4629,
+  4630, 4631, 4632, 4633, 4634, 4635, 4636, 4637, 4638,
+  4887, 4888, 4889, 4890, 4895, 4896,
+]
+
+async function fetchTMDBItems(type: 'movie' | 'tv'): Promise<any[]> {
+  if (!TMDB_KEY) return []
+  const ids = type === 'movie' ? CURATED_MOVIES : CURATED_SERIES
+  const uniqueIds = [...new Set(ids)]
+  const items: any[] = []
+
+  const chunks: number[][] = []
+  for (let i = 0; i < uniqueIds.length; i += 10) {
+    chunks.push(uniqueIds.slice(i, i + 10))
   }
 
-  return allItems
+  for (const chunk of chunks) {
+    try {
+      const results = await Promise.allSettled(
+        chunk.map(id =>
+          fetch(
+            `${TMDB_BASE}/${type === 'movie' ? 'movie' : 'tv'}/${id}?api_key=${TMDB_KEY}&language=en-US`,
+            { next: { revalidate: 86400 }, signal: AbortSignal.timeout(5000) }
+          ).then(r => r.ok ? r.json() : null)
+        )
+      )
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value) {
+          items.push(result.value)
+        }
+      }
+    } catch { continue }
+  }
+
+  return items
 }
 
 async function fetchTMDBDetails(type: 'movie' | 'tv', id: number): Promise<any> {
@@ -156,7 +209,7 @@ export async function generateQuestions(
       }
     } else {
       const type = category === 'movies' ? 'movie' : 'tv'
-      const items = await fetchTMDBPopular(type)
+      const items = await fetchTMDBItems(type)
 
       if (items.length > 0) {
         const filtered = shuffleArray(items.filter((i: any) => (i.vote_average || 0) > 4))
