@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       .from('rooms')
       .select('*')
       .eq('id', roomId)
-      .single()
+      .maybeSingle()
 
     if (!room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })

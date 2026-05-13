@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS rooms (
   host_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   category TEXT NOT NULL CHECK (category IN ('anime', 'movies', 'series')),
   game_mode TEXT NOT NULL CHECK (game_mode IN ('classic', 'character', 'quote', 'blur', 'timer')),
-  max_players INTEGER NOT NULL DEFAULT 4 CHECK (max_players BETWEEN 2 AND 4),
+  max_players INTEGER NOT NULL DEFAULT 4 CHECK (max_players BETWEEN 1 AND 4),
   status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'playing', 'round_end', 'finished')),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
@@ -144,6 +144,15 @@ CREATE POLICY "Rounds are viewable by room players" ON rounds
       SELECT 1 FROM room_players
       WHERE room_players.room_id = rounds.room_id
       AND room_players.player_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Host can insert rounds" ON rounds
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM rooms
+      WHERE rooms.id = rounds.room_id
+      AND rooms.host_id = auth.uid()
     )
   );
 

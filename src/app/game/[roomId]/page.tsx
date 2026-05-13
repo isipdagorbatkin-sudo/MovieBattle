@@ -24,7 +24,7 @@ export default function GamePage() {
         .from('rooms')
         .select('*')
         .eq('id', roomId)
-        .single()
+        .maybeSingle()
 
       if (!roomData) { router.push('/dashboard'); return }
       setRoom(roomData)

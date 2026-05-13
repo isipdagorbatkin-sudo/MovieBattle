@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         .from('rooms')
         .select('*')
         .eq('code', inviteCode.toUpperCase())
-        .single()
+        .maybeSingle()
 
       if (!room) {
         return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
         .select('*')
         .eq('room_id', room.id)
         .eq('player_id', user.id)
-        .single()
+        .maybeSingle()
 
       if (existing) {
         return NextResponse.json({ room })

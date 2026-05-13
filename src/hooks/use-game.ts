@@ -35,7 +35,7 @@ export function useGame(roomId: string) {
       .from('rooms')
       .select('*')
       .eq('id', roomId)
-      .single()
+      .maybeSingle()
 
     if (!roomData) { setError('Room not found'); setLoading(false); return }
 

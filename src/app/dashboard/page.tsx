@@ -19,8 +19,10 @@ import {
   Tv,
   Sparkles,
   ArrowRight,
+  Swords,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRoom } from '@/hooks/use-room'
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<any>(null)
@@ -29,13 +31,14 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+  const { createSoloGame } = useRoom()
 
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       setProfile(profileData)
 
       const { data: history } = await supabase
@@ -50,7 +53,7 @@ export default function DashboardPage() {
         .from('leaderboard_stats')
         .select('*')
         .eq('player_id', user.id)
-        .single()
+        .maybeSingle()
       if (statsData) {
         setStats({
           total: statsData.total_matches,
@@ -104,6 +107,10 @@ export default function DashboardPage() {
                 Create Room
               </Button>
             </Link>
+            <Button variant="outline" size="lg" onClick={() => createSoloGame()}>
+              <Swords className="w-4 h-4 mr-2" />
+              Play Solo
+            </Button>
             <Link href="/room/join">
               <Button variant="outline" size="lg">
                 <LogIn className="w-4 h-4 mr-2" />
@@ -172,15 +179,15 @@ export default function DashboardPage() {
             </Card>
           </Link>
 
-          <Link href="/leaderboard">
-            <Card className="border-yellow-500/20 bg-gradient-to-br from-yellow-600/10 to-orange-600/10 backdrop-blur-xl hover:from-yellow-600/20 hover:to-orange-600/20 transition-all group cursor-pointer">
+          <button onClick={() => createSoloGame()} className="text-left">
+            <Card className="border-green-500/20 bg-gradient-to-br from-green-600/10 to-emerald-600/10 backdrop-blur-xl hover:from-green-600/20 hover:to-emerald-600/20 transition-all group cursor-pointer w-full">
               <CardContent className="p-6">
-                <Trophy className="w-8 h-8 text-yellow-400 mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="text-lg font-semibold text-white mb-1">Leaderboard</h3>
-                <p className="text-sm text-white/40">See who&apos;s on top</p>
+                <Swords className="w-8 h-8 text-green-400 mb-3 group-hover:scale-110 transition-transform" />
+                <h3 className="text-lg font-semibold text-white mb-1">Play Solo</h3>
+                <p className="text-sm text-white/40">Quick game against yourself</p>
               </CardContent>
             </Card>
-          </Link>
+          </button>
         </motion.div>
 
         {/* Recent Matches */}

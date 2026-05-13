@@ -27,10 +27,10 @@ export function useRoom() {
       if (!user) throw new Error('Not authenticated')
 
       let code = generateRoomCode()
-      let existing = await supabase.from('rooms').select('code').eq('code', code).single()
-      while (existing.data) {
+      let { data: existing } = await supabase.from('rooms').select('code').eq('code', code).maybeSingle()
+      while (existing) {
         code = generateRoomCode()
-        existing = await supabase.from('rooms').select('code').eq('code', code).single()
+        existing = (await supabase.from('rooms').select('code').eq('code', code).maybeSingle()).data
       }
 
       const { data: roomData, error: roomError } = await supabase
@@ -68,6 +68,67 @@ export function useRoom() {
     }
   }, [])
 
+  const createSoloGame = useCallback(async (
+    category: Category = 'movies',
+    gameMode: GameMode = 'classic'
+  ) => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      let code = generateRoomCode()
+      let { data: existing } = await supabase.from('rooms').select('code').eq('code', code).maybeSingle()
+      while (existing) {
+        code = generateRoomCode()
+        existing = (await supabase.from('rooms').select('code').eq('code', code).maybeSingle()).data
+      }
+
+      const { data: roomData, error: roomError } = await supabase
+        .from('rooms')
+        .insert({
+          code,
+          host_id: user.id,
+          category,
+          game_mode: gameMode,
+          max_players: 1,
+          status: 'waiting',
+        })
+        .select()
+        .single()
+
+      if (roomError) throw roomError
+
+      const { error: playerError } = await supabase
+        .from('room_players')
+        .insert({
+          room_id: roomData.id,
+          player_id: user.id,
+          is_host: true,
+          is_ready: true,
+        })
+
+      if (playerError) throw playerError
+
+      const res = await fetch('/api/rooms/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: roomData.id }),
+      })
+
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Failed to start game')
+
+      router.push(`/game/${roomData.id}`)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const joinRoom = useCallback(async (code: string) => {
     setLoading(true)
     setError('')
@@ -76,13 +137,13 @@ export function useRoom() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const { data: roomData, error: roomError } = await supabase
+      const { data: roomData } = await supabase
         .from('rooms')
         .select('*')
         .eq('code', code.toUpperCase())
-        .single()
+        .maybeSingle()
 
-      if (roomError) throw new Error('Room not found')
+      if (!roomData) throw new Error('Room not found')
       if (roomData.status !== 'waiting') throw new Error('Game already started')
 
       const { count } = await supabase
@@ -115,7 +176,7 @@ export function useRoom() {
       .from('rooms')
       .select('*')
       .eq('code', code)
-      .single()
+      .maybeSingle()
 
     if (roomData) {
       setRoom(roomData)
@@ -157,6 +218,7 @@ export function useRoom() {
     loading,
     error,
     createRoom,
+    createSoloGame,
     joinRoom,
     fetchRoom,
     subscribeToRoom,

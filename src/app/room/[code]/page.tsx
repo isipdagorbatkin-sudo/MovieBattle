@@ -41,10 +41,24 @@ export default function RoomLobbyPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  useEffect(() => {
+    if (room && room.max_players === 1 && isHost) {
+      handleStartGame()
+    }
+  }, [room?.max_players, isHost])
+
   const handleStartGame = async () => {
     if (!room || !isHost) return
-    await supabase.from('rooms').update({ status: 'playing' }).eq('id', room.id)
-    router.push(`/game/${room.id}`)
+
+    const res = await fetch('/api/rooms/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomId: room.id }),
+    })
+
+    if (res.ok) {
+      router.push(`/game/${room.id}`)
+    }
   }
 
   const handleReady = async () => {
@@ -111,7 +125,7 @@ export default function RoomLobbyPage() {
                 Players
               </CardTitle>
               <CardDescription className="text-white/40">
-                {players.length < 2 ? 'Waiting for more players...' : 'Everyone ready?'}
+                {room?.max_players === 1 ? 'Solo game — starting...' : players.length < 2 ? 'Waiting for more players...' : 'Everyone ready?'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -170,7 +184,7 @@ export default function RoomLobbyPage() {
               {players.find(p => p.is_host)?.is_ready ? 'Not Ready' : 'Ready Up'}
             </Button>
 
-            {isHost && (
+            {isHost && room?.max_players !== 1 && (
               <Button
                 variant="primary"
                 size="lg"
@@ -184,12 +198,12 @@ export default function RoomLobbyPage() {
             )}
           </div>
 
-          {!allReady && isHost && (
+          {room?.max_players !== 1 && !allReady && isHost && (
             <p className="text-center text-xs text-white/30 mt-3">
               Waiting for all players to ready up...
             </p>
           )}
-          {players.length < 2 && (
+          {room?.max_players !== 1 && players.length < 2 && (
             <p className="text-center text-xs text-white/30 mt-3">
               Need at least 2 players to start
             </p>

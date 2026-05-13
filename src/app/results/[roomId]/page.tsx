@@ -29,7 +29,7 @@ export default function ResultsPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: roomData } = await supabase.from('rooms').select('*').eq('id', roomId).single()
+      const { data: roomData } = await supabase.from('rooms').select('*').eq('id', roomId).maybeSingle()
       setRoom(roomData)
 
       const { data: playerData } = await supabase

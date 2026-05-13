@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -30,14 +31,15 @@ type QuestionType = 'poster' | 'character' | 'quote' | 'blur' | 'description'
 
 export function GameScreen({ room, initialPlayers }: GameScreenProps) {
   const [players, setPlayers] = useState<RoomPlayer[]>(initialPlayers)
-  const [currentRound, setCurrentRound] = useState<Round | null>(null)
-  const [roundNumber, setRoundNumber] = useState(0)
+  const [rounds, setRounds] = useState<Round[]>([])
+  const [roundIndex, setRoundIndex] = useState(-1)
   const [timeLeft, setTimeLeft] = useState(15)
   const [hasAnswered, setHasAnswered] = useState(false)
   const [lastResult, setLastResult] = useState<{ correct: boolean; points: number } | null>(null)
   const [blurAmount, setBlurAmount] = useState(20)
   const [gameOver, setGameOver] = useState(false)
   const [playerScores, setPlayerScores] = useState<Record<string, number>>({})
+  const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
@@ -45,6 +47,24 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
     players.forEach(p => { scores[p.player_id] = p.score })
     setPlayerScores(scores)
   }, [players])
+
+  useEffect(() => {
+    const loadRounds = async () => {
+      const { data } = await supabase
+        .from('rounds')
+        .select('*')
+        .eq('room_id', room.id)
+        .order('round_number', { ascending: true })
+
+      if (data && data.length > 0) {
+        setRounds(data)
+        setRoundIndex(0)
+      }
+    }
+    loadRounds()
+  }, [room.id])
+
+  const currentRound = roundIndex >= 0 && roundIndex < rounds.length ? rounds[roundIndex] : null
 
   useEffect(() => {
     if (!currentRound) return
@@ -77,6 +97,28 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
     return () => clearInterval(timer)
   }, [currentRound?.id])
 
+  useEffect(() => {
+    if (!currentRound || roundIndex < 0) return
+    if (hasAnswered || timeLeft === 0) {
+      const delay = setTimeout(() => {
+        const next = roundIndex + 1
+        if (next < rounds.length) {
+          setRoundIndex(next)
+        } else {
+          setGameOver(true)
+        }
+      }, 2000)
+      return () => clearTimeout(delay)
+    }
+  }, [hasAnswered, timeLeft])
+
+  useEffect(() => {
+    if (gameOver) {
+      const timeout = setTimeout(() => router.push(`/results/${room.id}`), 2000)
+      return () => clearTimeout(timeout)
+    }
+  }, [gameOver])
+
   const handleAnswer = useCallback(async (answer: string) => {
     if (hasAnswered || !currentRound) return
     setHasAnswered(true)
@@ -99,16 +141,16 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
     })
 
     if (isCorrect) {
-      const { data } = await supabase
+      const { data: updatedPlayer } = await supabase
         .from('room_players')
         .update({ score: (playerScores[user.id] || 0) + points })
         .eq('room_id', room.id)
         .eq('player_id', user.id)
         .select()
-        .single()
+        .maybeSingle()
 
-      if (data) {
-        setPlayerScores((prev) => ({ ...prev, [user.id]: data.score }))
+      if (updatedPlayer) {
+        setPlayerScores((prev) => ({ ...prev, [user.id]: updatedPlayer.score }))
       }
     }
   }, [hasAnswered, currentRound, playerScores, room.id])
@@ -138,7 +180,7 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
             </div>
             <div>
               <Badge variant="primary" className="text-[10px]">
-                Round {roundNumber}/10
+                Round {roundIndex + 1}/{rounds.length}
               </Badge>
               <p className="text-xs text-white/40 mt-0.5">
                 {room.game_mode === 'classic' && 'Classic Guess'}
@@ -330,6 +372,24 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
             </Card>
           </motion.div>
         </AnimatePresence>
+
+        {gameOver && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              className="text-center"
+            >
+              <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
+              <h2 className="text-3xl font-bold text-gradient mb-2">Game Over!</h2>
+              <p className="text-white/40">Redirecting to results...</p>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   )

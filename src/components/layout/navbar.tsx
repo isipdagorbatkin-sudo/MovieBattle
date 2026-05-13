@@ -33,7 +33,7 @@ export function Navbar() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       if (user) {
-        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
         setProfile(data)
       }
     }

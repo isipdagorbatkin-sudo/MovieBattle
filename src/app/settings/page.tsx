@@ -25,7 +25,7 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       if (data) {
         setProfile(data)
         setDisplayName(data.display_name)

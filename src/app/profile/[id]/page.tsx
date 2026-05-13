@@ -29,10 +29,10 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', id).single()
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle()
       setProfile(profileData)
 
-      const { data: statsData } = await supabase.from('leaderboard_stats').select('*').eq('player_id', id).single()
+      const { data: statsData } = await supabase.from('leaderboard_stats').select('*').eq('player_id', id).maybeSingle()
       setStats(statsData)
 
       const { data: historyData } = await supabase
