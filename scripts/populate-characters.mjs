@@ -4,7 +4,18 @@ import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const content = readFileSync(resolve(__dirname, '../src/lib/game-data.ts'), 'utf-8')
+const gameDataPath = resolve(__dirname, '../src/lib/game-data.ts')
+const namesPath = resolve(__dirname, '../src/lib/character-names.ts')
+
+const content = readFileSync(gameDataPath, 'utf-8')
+const namesContent = readFileSync(namesPath, 'utf-8')
+
+// Parse CHARACTER_NAME_MAP from character-names.ts
+const nameMap = {}
+const nameRegex = /'([^']+)':\s*'([^']+)'/g
+for (const m of namesContent.matchAll(nameRegex)) {
+  nameMap[m[1]] = m[2]
+}
 
 // Skip lines that already have characterImage
 const linesWithoutImage = content.split('\n').filter(line => line.includes("character:") && !line.includes("characterImage:"))
@@ -15,52 +26,8 @@ const uniqueNames = [...new Set(characterNames)]
 
 console.log(`Found ${uniqueNames.length} unique characters to look up...`)
 
-// Russian → English name mapping
-const NAME_MAP = {
-  'Айсака Тайга': 'Taiga Aisaka',
-  'Тайга Айсака': 'Taiga Aisaka',
-  'Томоя Окадзаки': 'Tomoya Okazaki',
-  'Косэй Арима': 'Kousei Arima',
-  'Кагуя Синомия': 'Kaguya Shinomiya',
-  'Тору Хонда': 'Tohru Honda',
-  'Хори Кёко': 'Kyoko Hori',
-  'Хатиман Хикигая': 'Hachiman Hikigaya',
-  'Сакута Адзусагава': 'Sakuta Azusagawa',
-  'Сорота Канда': 'Sorata Kanda',
-  'Сёя Исида': 'Shoya Ishida',
-  'Мицуха Миямидзу': 'Mitsuha Miyamizu',
-  'Вайолет Эвергарден': 'Violet Evergarden',
-  'Инуяся': 'Inuyasha',
-  'Сон Ги-хун': 'Seong Gi-hun',
-  'Одиннадцать': 'Eleven',
-  'Рик Граймс': 'Rick Grimes',
-  'Геральт': 'Geralt of Rivia',
-  'Уэнсдей': 'Wednesday Addams',
-  'Джоэл': 'Joel Miller',
-  'Джон Сноу': 'Jon Snow',
-  'Уолтер Уайт': 'Walter White',
-  'Сол Гудман': 'Saul Goodman',
-  'Грегори Хаус': 'Gregory House',
-  'Шерлок Холмс': 'Sherlock Holmes',
-  'Дин Винчестер': 'Dean Winchester',
-  'Фокс Малдер': 'Fox Mulder',
-  'Шелдон Купер': 'Sheldon Cooper',
-  'Рейчел Грин': 'Rachel Green',
-  'Майкл Скотт': 'Michael Scott',
-  'Тед Мосби': 'Ted Mosby',
-  'Рю': 'Rue Bennett',
-  'Фрэнк Андервуд': 'Frank Underwood',
-  'Пабло Эскобар': 'Pablo Escobar',
-  'Тони Сопрано': 'Tony Soprano',
-  'Дейл Купер': 'Dale Cooper',
-  'Мандалорец': 'The Mandalorian',
-  'Локи': 'Loki (Marvel)',
-  'Декстер': 'Dexter Morgan',
-  'Профессор': 'Professor (Money Heist)',
-}
-
 async function lookupCharacter(name) {
-  const englishName = NAME_MAP[name] || name
+  const englishName = nameMap[name] || name
   try {
     const url = `https://api.jikan.moe/v4/characters?q=${encodeURIComponent(englishName)}&limit=1`
     const res = await fetch(url, {
@@ -100,7 +67,7 @@ async function main() {
     }
   }
 
-  writeFileSync(resolve(__dirname, '../src/lib/game-data.ts'), updatedContent, 'utf-8')
+  writeFileSync(gameDataPath, updatedContent, 'utf-8')
   console.log(`Written updated game-data.ts with ${mapEntries.length} character images`)
 }
 
