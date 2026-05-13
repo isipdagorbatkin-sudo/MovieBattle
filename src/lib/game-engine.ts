@@ -31,6 +31,22 @@ function shikimoriImage(path: string | null): string | null {
   return `/api/image-proxy?url=${encodeURIComponent('https://shikimori.one' + path)}`
 }
 
+async function fetchJikanImage(name: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `/api/jinkin?q=${encodeURIComponent(name)}`,
+      { signal: AbortSignal.timeout(3000) }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const imageUrl = data?.data?.images?.jpg?.large_image_url
+    if (!imageUrl) return null
+    return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
+  } catch {
+    return null
+  }
+}
+
 async function fetchTMDBPopular(type: 'movie' | 'tv'): Promise<any[]> {
   if (!TMDB_KEY) return []
   const endpoint = type === 'movie' ? 'movie' : 'tv'
@@ -117,10 +133,13 @@ export async function generateQuestions(
           const correctName = anime.russian || anime.name
           const options = generateOptions(correctName, allNames, gameMode)
 
+          const jikanImage = await fetchJikanImage(correctName)
+          const mediaUrl = jikanImage || shikimoriImage(anime.image?.original || anime.image?.preview || null)
+
           questions.push({
             id: `anime-${anime.id}`,
             type: gameMode === 'quote' ? 'quote' : 'poster',
-            mediaUrl: shikimoriImage(anime.image?.original || anime.image?.preview || null),
+            mediaUrl,
             clue: anime.description?.slice(0, 200) || null,
             options,
             correctAnswer: correctName,
