@@ -1,5 +1,5 @@
 import { updateSession } from '@/lib/supabase/middleware'
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -9,7 +9,11 @@ export async function middleware(request: NextRequest) {
     return new Response(null, { status: 307, headers: { Location: '/' } })
   }
 
-  return await updateSession(request)
+  try {
+    return await updateSession(request)
+  } catch {
+    return NextResponse.next({ request })
+  }
 }
 
 export const config = {
