@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/\/$/, '')
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export async function GET(req: NextRequest) {
-  return proxy(req)
-}
+const SKIP_EXACT = new Set(['host', 'connection', 'content-length', 'x-real-ip'])
+const SKIP_PREFIX = ['x-forwarded-', 'x-vercel-', 'x-next-']
 
-export async function POST(req: NextRequest) {
-  return proxy(req)
-}
-
-export async function PATCH(req: NextRequest) {
-  return proxy(req)
-}
-
-export async function DELETE(req: NextRequest) {
-  return proxy(req)
-}
+export async function GET(req: NextRequest) { return proxy(req) }
+export async function POST(req: NextRequest) { return proxy(req) }
+export async function PATCH(req: NextRequest) { return proxy(req) }
+export async function DELETE(req: NextRequest) { return proxy(req) }
 
 async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname.replace('/api/supabase', '')
@@ -26,13 +18,17 @@ async function proxy(req: NextRequest) {
 
   const headers: Record<string, string> = {
     apikey: SUPABASE_ANON_KEY,
-    Authorization: req.headers.get('Authorization') || `Bearer ${SUPABASE_ANON_KEY}`,
   }
 
-  const forwardHeaders = ['Content-Type', 'Accept', 'X-Client-Info', 'Prefer', 'Accept-Profile', 'Content-Profile']
-  for (const name of forwardHeaders) {
-    const value = req.headers.get(name)
-    if (value) headers[name] = value
+  req.headers.forEach((value, key) => {
+    const lower = key.toLowerCase()
+    if (SKIP_EXACT.has(lower)) return
+    if (SKIP_PREFIX.some(p => lower.startsWith(p))) return
+    headers[key] = value
+  })
+
+  if (!headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`
   }
 
   const body = req.method !== 'GET' && req.method !== 'HEAD'
@@ -46,6 +42,10 @@ async function proxy(req: NextRequest) {
   })
 
   const resBody = await response.text()
+
+  if (!response.ok) {
+    console.error(`[Supabase Proxy] ${req.method} ${path}${search} -> ${response.status}: ${resBody.slice(0, 500)}`)
+  }
 
   return new NextResponse(resBody, {
     status: response.status,
