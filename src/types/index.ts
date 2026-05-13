@@ -1,6 +1,6 @@
 export type Category = 'anime' | 'movies' | 'series'
 
-export type GameMode = 'classic' | 'character' | 'quote' | 'blur' | 'timer'
+export type GameMode = 'classic' | 'character' | 'blur' | 'timer'
 
 export type GameStatus = 'waiting' | 'playing' | 'round_end' | 'finished'
 
@@ -159,7 +159,7 @@ export interface TMDBDetails {
 
 export interface QuestionData {
   id: string
-  type: 'poster' | 'character' | 'quote' | 'blur' | 'description'
+  type: 'poster' | 'character' | 'blur' | 'description'
   mediaUrl: string | null
   clue: string | null
   characterImage: string | null

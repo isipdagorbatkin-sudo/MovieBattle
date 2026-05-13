@@ -27,7 +27,7 @@ interface GameScreenProps {
   initialPlayers: RoomPlayer[]
 }
 
-type QuestionType = 'poster' | 'character' | 'quote' | 'blur' | 'description'
+type QuestionType = 'poster' | 'character' | 'blur' | 'description'
 
 export function GameScreen({ room, initialPlayers }: GameScreenProps) {
   const [players, setPlayers] = useState<RoomPlayer[]>(initialPlayers)
@@ -258,13 +258,6 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                           className="w-full rounded-xl shadow-2xl"
                         />
                       </div>
-                    ) : room.game_mode === 'quote' ? (
-                      <div className="mb-6 py-8">
-                        <MessageSquare className="w-10 h-10 text-purple-400 mx-auto mb-4" />
-                        <p className="text-2xl italic text-white/80 font-serif">
-                          &ldquo;{currentRound.clue}&rdquo;
-                        </p>
-                      </div>
                     ) : room.game_mode === 'character' ? (
                       <div className="mb-6 py-4">
                         <p className="text-lg text-white/50 mb-4">Угадай по фото персонажа</p>
@@ -301,11 +294,9 @@ export function GameScreen({ room, initialPlayers }: GameScreenProps) {
                     <p className="text-sm text-white/30 mt-4">
                         {room.game_mode === 'character'
                           ? 'Угадай аниме/фильм/сериал по фото персонажа'
-                          : room.game_mode === 'quote'
-                            ? 'Угадай по цитате'
-                            : room.game_mode === 'blur'
-                              ? 'Угадай по размытому изображению'
-                              : 'Угадай по описанию'}
+                          : room.game_mode === 'blur'
+                            ? 'Угадай по размытому изображению'
+                            : 'Угадай по описанию'}
                     </p>
                   </>
                 )}

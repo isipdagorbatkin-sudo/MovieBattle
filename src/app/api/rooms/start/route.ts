@@ -34,11 +34,15 @@ export async function POST(request: Request) {
       const q = questions[i]
       let mediaUrl = q.mediaUrl
       if (q.type === 'character' && q.clue) {
-        const imageUrl = await lookupCharacterImage(q.clue, room.category)
-        if (imageUrl) {
-          mediaUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
+        if (q.characterImage) {
+          mediaUrl = `/api/image-proxy?url=${encodeURIComponent(q.characterImage)}`
+        } else {
+          const imageUrl = await lookupCharacterImage(q.clue, room.category)
+          if (imageUrl) {
+            mediaUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
+          }
+          await sleep(350)
         }
-        await sleep(350)
       }
       rounds.push({
         room_id: roomId,

@@ -17,7 +17,6 @@ const categories: { value: Category; label: string; icon: typeof Film; desc: str
 const gameModes: { value: GameMode; label: string; desc: string }[] = [
   { value: 'classic', label: 'Классический', desc: 'Угадай по описанию' },
   { value: 'character', label: 'Персонаж', desc: 'Угадай по персонажу' },
-  { value: 'quote', label: 'Цитата', desc: 'Угадай по цитате' },
   { value: 'blur', label: 'Размытие', desc: 'Размытое изображение' },
   { value: 'timer', label: 'На время', desc: 'Быстрые вопросы' },
 ]

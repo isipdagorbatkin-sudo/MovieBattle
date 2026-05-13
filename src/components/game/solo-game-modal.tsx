@@ -21,7 +21,6 @@ const categories: { value: Category; label: string; icon: typeof Clapperboard; c
 const modes: { value: GameMode; label: string; desc: string; icon: typeof User; color: string }[] = [
   { value: 'classic', label: 'Классический', desc: 'Угадай по описанию', icon: Clapperboard, color: 'from-blue-500 to-cyan-500' },
   { value: 'character', label: 'Персонаж', desc: 'Угадай по фото персонажа', icon: User, color: 'from-pink-500 to-rose-500' },
-  { value: 'quote', label: 'Цитата', desc: 'Угадай по цитате', icon: MessageSquare, color: 'from-yellow-500 to-orange-500' },
   { value: 'blur', label: 'Размытие', desc: 'Угадай по размытому изображению', icon: ImageIcon, color: 'from-green-500 to-emerald-500' },
   { value: 'timer', label: 'На время', desc: 'Угадай за 8 секунд', icon: Zap, color: 'from-red-500 to-pink-500' },
 ]
