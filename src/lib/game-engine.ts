@@ -33,16 +33,28 @@ function shikimoriImage(path: string | null): string | null {
 
 async function fetchTMDBPopular(type: 'movie' | 'tv'): Promise<any[]> {
   if (!TMDB_KEY) return []
-  try {
-    const endpoint = type === 'movie' ? 'movie' : 'tv'
-    const res = await fetch(
-      `${TMDB_BASE}/${endpoint}/popular?api_key=${TMDB_KEY}&language=en-US&page=1`,
-      { next: { revalidate: 3600 } }
-    )
-    if (!res.ok) return []
-    const data = await res.json()
-    return data.results || []
-  } catch { return [] }
+  const endpoint = type === 'movie' ? 'movie' : 'tv'
+  const allItems: any[] = []
+  const seen = new Set<number>()
+
+  for (const page of [1, 2, 3, 4, 5]) {
+    try {
+      const res = await fetch(
+        `${TMDB_BASE}/${endpoint}/popular?api_key=${TMDB_KEY}&language=en-US&page=${page}`,
+        { next: { revalidate: 3600 } }
+      )
+      if (!res.ok) break
+      const data = await res.json()
+      for (const item of (data.results || [])) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id)
+          allItems.push(item)
+        }
+      }
+    } catch { break }
+  }
+
+  return allItems
 }
 
 async function fetchTMDBDetails(type: 'movie' | 'tv', id: number): Promise<any> {
@@ -59,18 +71,31 @@ async function fetchTMDBDetails(type: 'movie' | 'tv', id: number): Promise<any> 
 }
 
 async function fetchAnimeRomance(): Promise<any[]> {
-  try {
-    const res = await fetch(
-      `${SHIKIMORI_BASE}/animes?page=1&limit=50&order=popularity&genre=8&censored=true`,
-      {
-        headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
-        next: { revalidate: 3600 },
+  const allItems: any[] = []
+  const seen = new Set<number>()
+
+  for (const page of [1, 2, 3]) {
+    try {
+      const res = await fetch(
+        `${SHIKIMORI_BASE}/animes?page=${page}&limit=50&order=popularity&genre=8&censored=true`,
+        {
+          headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
+          next: { revalidate: 3600 },
+        }
+      )
+      if (!res.ok) break
+      const data = await res.json()
+      if (!Array.isArray(data)) break
+      for (const item of data) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id)
+          allItems.push(item)
+        }
       }
-    )
-    if (!res.ok) return []
-    const data = await res.json()
-    return Array.isArray(data) ? data : []
-  } catch { return [] }
+    } catch { break }
+  }
+
+  return allItems
 }
 
 export async function generateQuestions(
@@ -83,9 +108,7 @@ export async function generateQuestions(
   try {
     if (category === 'anime') {
       const animes = await fetchAnimeRomance()
-      const popular = animes
-        .filter((a: any) => a.score && parseFloat(a.score) > 7)
-        .sort((a: any, b: any) => parseFloat(b.score) - parseFloat(a.score))
+      const popular = shuffleArray(animes.filter((a: any) => a.score && parseFloat(a.score) > 6))
 
       if (popular.length > 0) {
         for (let i = 0; i < Math.min(count, popular.length); i++) {
@@ -112,9 +135,7 @@ export async function generateQuestions(
       const items = await fetchTMDBPopular(type)
 
       if (items.length > 0) {
-        const filtered = items
-          .filter((i: any) => (i.vote_average || 0) > 6)
-          .sort((a: any, b: any) => (b.vote_average || 0) - (a.vote_average || 0))
+        const filtered = shuffleArray(items.filter((i: any) => (i.vote_average || 0) > 4))
 
         for (let i = 0; i < Math.min(count, filtered.length); i++) {
           const item = filtered[i]
@@ -177,6 +198,16 @@ function createFallbackQuestion(category: Category, gameMode: GameMode, index: n
       'A girl inherits a moving castle from a witch',
       'A young witch starts her own delivery service',
       'A pig who used to be a man fights air pirates',
+      'A deaf girl and a bully find redemption through each other',
+      'A boy saves a girl who can control the weather',
+      'A prince fights to save the forest spirits and a princess',
+      'A machine that lets people enter dreams blurs reality and fantasy',
+      'A girl travels back in time and learns to cherish every moment',
+      'A wolf mother raises her half-wolf children alone',
+      'A math whiz uses a virtual world to save the real one',
+      'A young girl journeys to a mystical land to find her voice',
+      'Two siblings grow up on a hill overlooking a harbor',
+      'A summer love story between two high school students',
     ],
     movies: [
       'A thief who enters dreams to steal secrets',
@@ -189,6 +220,16 @@ function createFallbackQuestion(category: Category, gameMode: GameMode, index: n
       'A banker survives prison and seeks redemption',
       'A mob hitman looks back on his life in the 1960s',
       'The mafia families of New York fight for power',
+      'A hobbit must destroy a powerful ring in a volcano',
+      'A farm boy joins a rebellion to defeat an evil empire',
+      'Scientists bring dinosaurs back to life on an island',
+      'A teenager travels back in time to fix his familys future',
+      'A Roman general seeks vengeance in the Colosseum',
+      'An FBI trainee hunts a serial killer with a cannibals help',
+      'A squad storms Normandy beach on D-Day',
+      'A young lion prince must reclaim his kingdom',
+      'A space ranger and a cowboy toy learn to share their owner',
+      'A cyborg from the future tries to change history',
     ],
     series: [
       'A chemistry teacher cooks meth after cancer diagnosis',
@@ -201,6 +242,16 @@ function createFallbackQuestion(category: Category, gameMode: GameMode, index: n
       'Hundreds compete in deadly childrens games for money',
       'A monster hunter fights supernatural threats',
       'A heist crew uses a unique ability to rob banks',
+      'A crooked lawyer tries to clean up his act',
+      'A lone bounty hunter protects a mysterious child',
+      'A mad scientist and his grandson go on interdimensional adventures',
+      'Each episode explores a dystopian near-future technology',
+      'A smuggler leads a girl across a post-apocalyptic America',
+      'A media empire family fights for control of the company',
+      'A young chef turns a rundown sandwich shop into a destination',
+      'The Targaryen dynasty fights for the Iron Throne centuries before',
+      'Two sisters from rival cities discover the truth about their world',
+      'Romance and scandal among Londons high society',
     ],
   }
 
@@ -209,15 +260,24 @@ function createFallbackQuestion(category: Category, gameMode: GameMode, index: n
       'Your Name', 'Spirited Away', 'Howls Moving Castle', 'The Garden of Words',
       'The Wind Rises', 'Nausicaä of the Valley of the Wind', 'My Neighbor Totoro',
       'Castle in the Sky', 'Kikis Delivery Service', 'Porco Rosso',
+      'A Silent Voice', 'Weathering With You', 'Princess Mononoke', 'Paprika',
+      'The Girl Who Leapt Through Time', 'Wolf Children', 'Summer Wars',
+      'Children Who Chase Lost Voices', 'From Up on Poppy Hill', 'Ocean Waves',
     ],
     movies: [
       'Inception', 'The Dark Knight', 'Interstellar', 'Pulp Fiction',
       'Fight Club', 'The Matrix', 'Forrest Gump', 'The Shawshank Redemption',
       'Goodfellas', 'The Godfather',
+      'The Lord of the Rings', 'Star Wars', 'Jurassic Park', 'Back to the Future',
+      'Gladiator', 'The Silence of the Lambs', 'Saving Private Ryan',
+      'The Lion King', 'Toy Story', 'Terminator 2',
     ],
     series: [
       'Breaking Bad', 'Game of Thrones', 'Stranger Things', 'The Office',
       'Friends', 'The Crown', 'Dark', 'Squid Game', 'The Witcher', 'Money Heist',
+      'Better Call Saul', 'The Mandalorian', 'Rick and Morty', 'Black Mirror',
+      'The Last of Us', 'Succession', 'The Bear', 'House of the Dragon',
+      'Arcane', 'Bridgerton',
     ],
   }
 
