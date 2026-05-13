@@ -1,6 +1,10 @@
 import { shuffleArray } from './utils'
 import type { Category, GameMode, QuestionData } from '@/types'
 
+const TMDB_BASE = 'https://api.themoviedb.org/3'
+const TMDB_KEY = process.env.TMDB_API_KEY
+const SHIKIMORI_BASE = 'https://shikimori.one/api'
+
 const WORDS = ['the', 'a', 'an', 'and', 'or', 'of', 'in', 'to', 'for', 'with', 'on', 'at', 'by', 'is', 'it']
 
 function normalizeTitle(title: string): string {
@@ -17,10 +21,17 @@ function wordDistance(a: string, b: string): number {
   return matches / Math.max(aWords.length, bWords.length)
 }
 
+function tmdbImageUrl(path: string | null): string | null {
+  if (!path) return null
+  return `/api/image-proxy?path=${encodeURIComponent('/w500' + path)}`
+}
+
 async function fetchTMDBPopular(type: 'movie' | 'tv'): Promise<any[]> {
+  if (!TMDB_KEY) return []
   try {
+    const endpoint = type === 'movie' ? 'movie' : 'tv'
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/${type === 'movie' ? 'movies' : 'series'}?type=popular`,
+      `${TMDB_BASE}/${endpoint}/popular?api_key=${TMDB_KEY}&language=en-US&page=1`,
       { next: { revalidate: 3600 } }
     )
     if (!res.ok) return []
@@ -30,9 +41,11 @@ async function fetchTMDBPopular(type: 'movie' | 'tv'): Promise<any[]> {
 }
 
 async function fetchTMDBDetails(type: 'movie' | 'tv', id: number): Promise<any> {
+  if (!TMDB_KEY) return null
   try {
+    const endpoint = type === 'movie' ? 'movie' : 'tv'
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/${type === 'movie' ? 'movies' : 'series'}?id=${id}`,
+      `${TMDB_BASE}/${endpoint}/${id}?api_key=${TMDB_KEY}&append_to_response=credits,images`,
       { next: { revalidate: 86400 } }
     )
     if (!res.ok) return null
@@ -43,8 +56,11 @@ async function fetchTMDBDetails(type: 'movie' | 'tv', id: number): Promise<any> 
 async function fetchAnimeRomance(): Promise<any[]> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/proxy/shikimori?endpoint=animes&limit=50&order=popularity`,
-      { next: { revalidate: 3600 } }
+      `${SHIKIMORI_BASE}/animes?page=1&limit=50&order=popularity&genre=8&censored=true`,
+      {
+        headers: { 'User-Agent': 'MovieBattle/1.0 (movie-battle-app)' },
+        next: { revalidate: 3600 },
+      }
     )
     if (!res.ok) return []
     const data = await res.json()
@@ -108,9 +124,7 @@ export async function generateQuestions(
           questions.push({
             id: `${type}-${item.id}`,
             type: gameMode === 'classic' ? 'poster' : gameMode === 'quote' ? 'quote' : 'description',
-            mediaUrl: item.poster_path
-              ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-              : null,
+            mediaUrl: tmdbImageUrl(item.poster_path),
             clue: item.overview?.slice(0, 200) || null,
             options,
             correctAnswer: title,
@@ -148,11 +162,50 @@ function generateOptions(correct: string, allNames: string[], gameMode: GameMode
 }
 
 function createFallbackQuestion(category: Category, gameMode: GameMode, index: number): QuestionData {
-  const fallbacks: Record<Category, string[]> = {
+  const clues: Record<string, string[]> = {
     anime: [
-      'Твоё имя', 'Унесённые призраками', 'Ходячий замок', 'Сад изящных слов',
-      'Ветер крепчает', 'Навсикая из долины ветров', 'Мой сосед Тоторо',
-      'Небесный замок Лапута', 'Ведьмина служба доставки', 'Порко Россо',
+      'Two teenagers swap bodies and fall in love across time',
+      'A young girl works for a spirit bathhouse to save her parents',
+      'A young wizard with a talking book must break a curse',
+      'A boy falls in love with a girl who can make it rain',
+      'A man dreams of building airplanes while fighting illness',
+      'A princess from a peaceful valley must stop an invasion',
+      'Two sisters befriend a forest spirit after moving to the countryside',
+      'A girl inherits a moving castle from a witch',
+      'A young witch starts her own delivery service',
+      'A pig who used to be a man fights air pirates',
+    ],
+    movies: [
+      'A thief who enters dreams to steal secrets',
+      'A vigilante fights crime in a dark city',
+      'Astronauts travel through a wormhole to save humanity',
+      'Two hitmen go on a wild adventure in Los Angeles',
+      'A man with split personality fights the system',
+      'A hacker discovers reality is a simulation',
+      'A simple man runs across America and changes history',
+      'A banker survives prison and seeks redemption',
+      'A mob hitman looks back on his life in the 1960s',
+      'The mafia families of New York fight for power',
+    ],
+    series: [
+      'A chemistry teacher cooks meth after cancer diagnosis',
+      'Noble families fight for control of a fantasy kingdom',
+      'Kids uncover supernatural mysteries in a small town',
+      'A mockumentary about office workers at a paper company',
+      'Six friends navigate life in New York City',
+      'The drama of the British royal family across decades',
+      'A family in Germany uncovers a time travel conspiracy',
+      'Hundreds compete in deadly childrens games for money',
+      'A monster hunter fights supernatural threats',
+      'A heist crew uses a unique ability to rob banks',
+    ],
+  }
+
+  const fallbackNames: Record<Category, string[]> = {
+    anime: [
+      'Your Name', 'Spirited Away', 'Howls Moving Castle', 'The Garden of Words',
+      'The Wind Rises', 'Nausicaä of the Valley of the Wind', 'My Neighbor Totoro',
+      'Castle in the Sky', 'Kikis Delivery Service', 'Porco Rosso',
     ],
     movies: [
       'Inception', 'The Dark Knight', 'Interstellar', 'Pulp Fiction',
@@ -165,17 +218,19 @@ function createFallbackQuestion(category: Category, gameMode: GameMode, index: n
     ],
   }
 
-  const names = fallbacks[category]
+  const names = fallbackNames[category]
   const correct = names[index % names.length]
   const otherNames = names.filter((n) => n !== correct)
   const shuffled = shuffleArray(otherNames)
   const distractors = shuffled.slice(0, 3)
+  const categoryClues = clues[category]
+  const clue = categoryClues[index % categoryClues.length]
 
   return {
     id: `fallback-${index}`,
-    type: 'description',
+    type: gameMode === 'blur' ? 'blur' : 'description',
     mediaUrl: null,
-    clue: `Popular ${category === 'anime' ? 'anime' : category === 'movies' ? 'movie' : 'series'}`,
+    clue,
     options: shuffleArray([correct, ...distractors]),
     correctAnswer: correct,
     timeLimit: gameMode === 'timer' ? 8000 : 15000,
